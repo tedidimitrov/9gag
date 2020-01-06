@@ -19,8 +19,7 @@ target/
 *.iml
 *.ipr
 
-## DB credentials 
-dbCredentials.txt
+
 
 ### NetBeans ###
 /nbproject/private/
@@ -32,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+pom.xml
+application.properties
