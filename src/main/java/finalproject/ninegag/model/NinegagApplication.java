@@ -10,4 +10,6 @@ public class NinegagApplication {
         SpringApplication.run(NinegagApplication.class, args);
     }
 
+
+
 }

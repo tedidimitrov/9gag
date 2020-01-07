@@ -1,6 +1,7 @@
 package finalproject.ninegag.model.pojo;
 
 
+import finalproject.ninegag.model.dto.CommentDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,14 +28,19 @@ public class Comment {
     private String text;
     @Column
     private String imageUrl;
-    @Column
+    @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
-    @Column
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @Column
+    @OneToOne
     @JoinColumn(name = "id")
     private Comment repliedTo;
+
+    public Comment(CommentDTO commentDTO){
+        setText(commentDTO.getText());
+        setImageUrl(commentDTO.getImageUrl());
+    }
 
 }
