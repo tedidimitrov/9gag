@@ -9,9 +9,11 @@ import finalproject.ninegag.model.dto.RegisterUserDTO;
 import finalproject.ninegag.model.dto.UserWithoutPasswordDTO;
 import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
+import finalproject.ninegag.model.repository.PostRepository;
 import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,8 @@ public class UserController extends AbstractController{
     private UserDAO userDAO;
     @Autowired
     private PostDAO postDAO;
+    @Autowired
+    private PostRepository postRepository;
 
     @PostMapping("/users/register")
     public UserWithoutPasswordDTO register(@RequestBody RegisterUserDTO userDTO,HttpSession session) throws SQLException {
@@ -72,13 +76,11 @@ public class UserController extends AbstractController{
 
     @GetMapping("users/posts")
     public List<Post> getPosts(HttpSession session) throws SQLException {
-        System.out.println("AFTER THIS");
         User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
-        System.out.println("BEFORE THIS");
         if(user == null){
             throw new AuthorizationException();
         }
-        List<Post> posts = postDAO.getPostsByUser(user);
+        List<Post> posts = postRepository.findAllByUser_Id(user.getId());
         return posts;
     }
 

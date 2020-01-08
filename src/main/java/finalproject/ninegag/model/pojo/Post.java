@@ -31,9 +31,10 @@ public class Post {
     @Column
     private int points;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "post_owner_id")
     private User user;
-    @Column
+    @ManyToOne
+    @JoinColumn(name ="category_id")
     private Category category;
 
 }
