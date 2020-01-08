@@ -56,4 +56,8 @@ public abstract class AbstractController {
                 e.getClass().getName());
         return errorDTO;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> a0f6f002bf26a56b1c72639ffc0a3d73c635f486
 }

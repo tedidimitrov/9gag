@@ -8,4 +8,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> a0f6f002bf26a56b1c72639ffc0a3d73c635f486
 }
