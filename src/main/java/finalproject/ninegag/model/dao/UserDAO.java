@@ -1,11 +1,16 @@
 package finalproject.ninegag.model.dao;
 
+import finalproject.ninegag.exceptions.AuthorizationException;
+import finalproject.ninegag.model.pojo.Category;
+import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class UserDAO {
@@ -18,6 +23,16 @@ public class UserDAO {
             "password," +
             "date_registered)" +
             " VALUES (?,?,?,?,?,?);";
+    private static final String SELECT_USER_BY_USERNAME = "SELECT " +
+            "id," +
+            "user_name," +
+            "first_name," +
+            "last_name," +
+            "email," +
+            "password," +
+            "date_registered" +
+            " FROM users" +
+            " WHERE user_name = ?;";
 
 
     @Autowired
@@ -36,6 +51,28 @@ public class UserDAO {
             ResultSet set = statement.getGeneratedKeys();
             set.next();
             user.setId(set.getLong(1));
+        }
+    }
+
+    public User getByUserName(String username) throws SQLException {
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        try(PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_USERNAME, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1,username);
+            statement.executeQuery();
+            ResultSet rows = statement.executeQuery();
+            if(rows.next()) {
+                return new User(
+                        rows.getLong("id"),
+                        rows.getString("user_name"),
+                        rows.getString("first_name"),
+                        rows.getString("last_name"),
+                        rows.getString("email"),
+                        rows.getString("password"),
+                        rows.getTimestamp("date_registered").toLocalDateTime());
+            }
+            else{
+                return null;
+            }
         }
     }
 }

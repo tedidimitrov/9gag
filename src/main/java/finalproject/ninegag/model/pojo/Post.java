@@ -1,6 +1,7 @@
 package finalproject.ninegag.model.pojo;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -26,9 +28,12 @@ public class Post {
     private LocalDateTime dateUploaded;
     @Column
     private String imageUrl;
+    @Column
+    private int points;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    //private Category category;
+    @Column
+    private Category category;
 
 }

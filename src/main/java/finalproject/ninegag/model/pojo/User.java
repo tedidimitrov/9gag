@@ -1,6 +1,7 @@
 package finalproject.ninegag.model.pojo;
 
 import finalproject.ninegag.model.dto.RegisterUserDTO;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -38,7 +40,7 @@ public class User {
         setFirstName(userDTO.getFirstName());
         setLastName(userDTO.getLastName());
         setEmail(userDTO.getEmail());
-        setPassword(userDTO.getPassword());
+        setPassword(userDTO.getPassword()); //TODO ENCRYPT PASSWORD;
         setDateRegistered(LocalDateTime.now());
     }
 
