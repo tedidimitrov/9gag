@@ -1,11 +1,6 @@
 package finalproject.ninegag.model.pojo;
 
-<<<<<<< HEAD
-//import jdk.jfr.Category;
-=======
 
-import jdk.jfr.Category;
->>>>>>> a0f6f002bf26a56b1c72639ffc0a3d73c635f486
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

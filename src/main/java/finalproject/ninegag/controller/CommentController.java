@@ -1,11 +1,7 @@
 package finalproject.ninegag.controller;
 
 
-<<<<<<< HEAD
-//import com.sun.xml.bind.v2.TODO;
-=======
-import com.sun.xml.bind.v2.TODO;
->>>>>>> a0f6f002bf26a56b1c72639ffc0a3d73c635f486
+
 import finalproject.ninegag.exceptions.AuthorizationException;
 import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
@@ -74,11 +70,7 @@ public class CommentController {
         //todo post.isPresent()
 
         Optional<Comment> comment = commentRepository.findById(commentId);
-<<<<<<< HEAD
         if(!comment.isPresent()){
-=======
-        if(comment.isEmpty()){
->>>>>>> a0f6f002bf26a56b1c72639ffc0a3d73c635f486
             throw new NullPointerException("Comment not found");
         }
         if(comment.get().getUser().getId() != user.getId()){
@@ -119,11 +111,7 @@ public class CommentController {
         //todo post.isPresent()
 
         Optional<Comment> comment = commentRepository.findById(commentId);
-<<<<<<< HEAD
         if(!comment.isPresent()){
-=======
-        if(comment.isEmpty()){
->>>>>>> a0f6f002bf26a56b1c72639ffc0a3d73c635f486
             throw new NullPointerException("Comment not found");
         }
 
