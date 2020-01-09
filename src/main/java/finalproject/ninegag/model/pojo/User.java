@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 import javax.persistence.*;
@@ -42,6 +44,10 @@ public class User {
         setEmail(userDTO.getEmail());
         setPassword(userDTO.getPassword()); //TODO ENCRYPT PASSWORD;
         setDateRegistered(LocalDateTime.now());
+    }
+
+    public void setPassword(String password){
+        this.password = new BCryptPasswordEncoder().encode(password);
     }
 
 
