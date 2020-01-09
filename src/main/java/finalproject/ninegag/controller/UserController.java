@@ -10,7 +10,10 @@ import finalproject.ninegag.model.dto.UserWithoutPasswordDTO;
 import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.PostRepository;
+import finalproject.ninegag.model.repository.UserRepository;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -30,24 +34,22 @@ public class UserController extends AbstractController{
     @Autowired
     private UserDAO userDAO;
     @Autowired
-    private PostDAO postDAO;
-    @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private UserRepository userRepository;
 
+    @SneakyThrows
     @PostMapping("/users/register")
-    public UserWithoutPasswordDTO register(@RequestBody RegisterUserDTO userDTO,HttpSession session) throws SQLException {
-        //validate data in userDTO
-            //if already exists in database
-            //if the password contains at least 8 symbols with at least one digit
-            //if the passwords watch
-            // encrypt the password
-        //TODO validate the above!
-
-        //create User object
+    public UserWithoutPasswordDTO register(@Valid @RequestBody RegisterUserDTO userDTO, HttpSession session){
         User user = new User(userDTO);
+        //check if already exists
+        if(userDTO.getPassword().equals(userDTO.getConfirmPassword())){
+            if(userRepository.existsByEmail(userDTO.getEmail())){
+                throw  new AuthorizationException("Already existing account!");
+            }
+        }
         //add to database
-        userDAO.addUser(user);
-        //return userWithoutPasswordDTO
+        userRepository.save(user);
         session.setAttribute(SESSION_KEY_LOGGED_USER,user);
         UserWithoutPasswordDTO responseDTO =new UserWithoutPasswordDTO(user);
         return responseDTO;
@@ -77,7 +79,7 @@ public class UserController extends AbstractController{
     public List<Post> getPosts(HttpSession session) throws SQLException {
         User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         if(user == null){
-            throw new AuthorizationException();
+            throw new AuthorizationException("You must login first!");
         }
         List<Post> posts = postRepository.findAllByUser_Id(user.getId());
         return posts;

@@ -33,7 +33,7 @@ public class CommentController {
                               HttpSession session){
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
-            throw new AuthorizationException();
+            throw new AuthorizationException("You must login first!");
         }
 
         //todo post.getId()
@@ -66,7 +66,7 @@ public class CommentController {
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
-            throw new AuthorizationException();
+            throw new AuthorizationException("You must login first!");
         }
 
         //todo post.isPresent()
@@ -110,7 +110,7 @@ public class CommentController {
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
-            throw new AuthorizationException();
+            throw new AuthorizationException("You must login first!");
         }
         //todo post.isPresent()
 
@@ -138,7 +138,7 @@ public class CommentController {
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
-            throw new AuthorizationException();
+            throw new AuthorizationException("You must login first!");
         }
 
         //todo post verification
@@ -163,7 +163,7 @@ public class CommentController {
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
-            throw new AuthorizationException();
+            throw new AuthorizationException("You must login first!");
         }
 
         //todo post verification

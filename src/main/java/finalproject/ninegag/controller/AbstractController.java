@@ -5,12 +5,14 @@ import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dto.ErrorDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
+@Validated
 public abstract class AbstractController {
 
     @ExceptionHandler({NotFoundException.class})
@@ -37,7 +39,7 @@ public abstract class AbstractController {
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorDTO handleBadRequests(Exception e){
+    public ErrorDTO handleBadRequests(BadRequestException e){
         ErrorDTO errorDTO = new ErrorDTO(
                 e.getMessage(),
                 HttpStatus.BAD_REQUEST.value(),
