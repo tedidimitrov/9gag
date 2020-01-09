@@ -6,7 +6,6 @@ import finalproject.ninegag.model.dto.ReadyPostDTO;
 import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.PostRepository;
-import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +34,6 @@ public class PostController extends AbstractController{
         Post post = new Post(postDTO,currentUser);
         //add to database
         postRepository.save(post);
-        //postDAO.makePost(post,currentUser);
 
         ReadyPostDTO readyPostDTO =new ReadyPostDTO(post);
         return readyPostDTO;

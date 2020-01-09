@@ -10,7 +10,6 @@ import finalproject.ninegag.model.dto.UserWithoutPasswordDTO;
 import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.PostRepository;
-import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;

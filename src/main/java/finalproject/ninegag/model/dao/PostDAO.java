@@ -3,7 +3,6 @@ package finalproject.ninegag.model.dao;
 import finalproject.ninegag.model.pojo.Category;
 import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
-import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
