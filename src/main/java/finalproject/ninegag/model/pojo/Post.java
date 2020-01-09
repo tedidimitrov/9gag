@@ -1,6 +1,8 @@
 package finalproject.ninegag.model.pojo;
 
 
+import finalproject.ninegag.model.dto.MakePostDTO;
+import finalproject.ninegag.model.dto.ReadyPostDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,4 +39,26 @@ public class Post {
     @JoinColumn(name ="category_id")
     private Category category;
 
+    public Post(MakePostDTO makePostDTO,User user){
+        setTitle(makePostDTO.getTitle());
+        setImageUrl(makePostDTO.getImage_url());
+        setCategory(makePostDTO.getCategory());
+        setPoints(0);
+        setDateUploaded(LocalDateTime.now());
+        setUser(user);
+
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", dateUploaded=" + dateUploaded +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", points=" + points +
+                ", user=" + user +
+                ", category=" + category +
+                '}';
+    }
 }

@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +18,28 @@ public class PostDAO {
 
     private static final String GET_MY_POSTS = "SELECT id,title,image_url,date_uploaded,points,category_id FROM posts WHERE post_owner_id = ?;";
 
+    private static final String MAKE_POST = "INSERT INTO posts (title,date_uploaded,image_url,points,post_owner_id,category_id) VALUES (?,?,?,?,?,?);";
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+
+    public void makePost(Post post, User user) throws SQLException{
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        try(PreparedStatement statement = connection.prepareStatement(MAKE_POST, Statement.RETURN_GENERATED_KEYS)){
+            statement.setString(1,post.getTitle());
+            statement.setTimestamp(2,Timestamp.valueOf(LocalDateTime.now()));
+            statement.setString(3,post.getImageUrl());
+            statement.setInt(4,0);
+            statement.setLong(5,user.getId());
+            statement.setLong(6,post.getCategory().getId());
+            statement.executeUpdate();
+            ResultSet set = statement.getGeneratedKeys();
+            post.setId(set.getLong(1));
+
+        }
+
+    }
 
     public List<Post> getPostsByUser(User user) throws SQLException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
