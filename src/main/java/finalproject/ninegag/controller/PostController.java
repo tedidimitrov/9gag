@@ -72,4 +72,13 @@ public class PostController extends AbstractController{
         return this.postRepository.findAllByOrderByDateUploadedDesc();
     }
 
+    @GetMapping("/posts/titles/{title}")
+    public Post getPostByTitle(@PathVariable String title){
+        Post post =this.postRepository.getByTitle(title);
+        if(post != null){
+            return post;
+        }
+        throw new NotFoundException("Not found such post!");
+    }
+
 }
