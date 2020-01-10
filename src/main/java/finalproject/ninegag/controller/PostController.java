@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.Session;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,11 +55,16 @@ public class PostController extends AbstractController{
 
     }
 
-    //Problem working via repository
     @GetMapping("/posts/{id}")
     public ReadyPostDTO getPostById(@PathVariable long id){
         ReadyPostDTO readyPostDTO = new ReadyPostDTO(getPost(id));
         return readyPostDTO;
+    }
+
+    @GetMapping("/posts")
+    public List<Post> getAllPosts(){
+        List<Post> posts =this.postRepository.findAll();
+        return posts;
     }
 
 }
