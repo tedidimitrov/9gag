@@ -61,14 +61,15 @@ public class UserDAO {
             statement.executeQuery();
             ResultSet rows = statement.executeQuery();
             if(rows.next()) {
-                return new User(
-                        rows.getLong("id"),
-                        rows.getString("user_name"),
-                        rows.getString("first_name"),
-                        rows.getString("last_name"),
-                        rows.getString("email"),
-                        rows.getString("password"),
-                        rows.getTimestamp("date_registered").toLocalDateTime());
+//                return new User(
+//                        rows.getLong("id"),
+//                        rows.getString("user_name"),
+//                        rows.getString("first_name"),
+//                        rows.getString("last_name"),
+//                        rows.getString("email"),
+//                        rows.getString("password"),
+//                        rows.getTimestamp("date_registered").toLocalDateTime());
+                return null;
             }
             else{
                 return null;

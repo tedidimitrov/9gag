@@ -47,15 +47,15 @@ public class PostDAO {
             ResultSet rows = statement.executeQuery();
             List<Post> posts = new ArrayList<>();
             while (rows.next()){
-                Post post = new Post(
-                        rows.getLong("id"),
-                        rows.getString("title"),
-                        rows.getTimestamp("date_uploaded").toLocalDateTime(),
-                        rows.getString("image_url"),
-                        rows.getInt("points"),
-                        user,
-                        new Category(rows.getLong("category_id")));
-                posts.add(post);
+//                Post post = new Post(
+//                        rows.getLong("id"),
+//                        rows.getString("title"),
+//                        rows.getTimestamp("date_uploaded").toLocalDateTime(),
+//                        rows.getString("image_url"),
+//                        rows.getInt("points"),
+//                        user,
+//                        new Category(rows.getLong("category_id")));
+//                posts.add(post);
             }
             return posts;
         }

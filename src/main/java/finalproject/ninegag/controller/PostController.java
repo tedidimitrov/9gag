@@ -9,12 +9,15 @@ import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.Session;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,11 +56,66 @@ public class PostController extends AbstractController{
 
     }
 
-    //Problem working via repository
     @GetMapping("/posts/{id}")
     public ReadyPostDTO getPostById(@PathVariable long id){
         ReadyPostDTO readyPostDTO = new ReadyPostDTO(getPost(id));
         return readyPostDTO;
+    }
+
+    @GetMapping("/posts")
+    public List<Post> getAllPosts(){
+        List<Post> posts =this.postRepository.findAll();
+        return posts;
+    }
+
+    @GetMapping("/posts/getByDate")
+    public List<Post> getAllByDateDesc(){
+        return this.postRepository.findAllByOrderByDateUploadedDesc();
+    }
+
+    @GetMapping("/posts/titles/{title}")
+    public List<Post> getPostByTitle(@PathVariable String title){
+        List<Post> posts =this.postRepository.getByTitle(title);
+        if(posts != null){
+            return posts;
+        }
+        throw new NotFoundException("Not found such post!");
+    }
+
+    @PostMapping("/posts/downvote/{post_id}")
+    public ResponseEntity<String> downvotePost(@PathVariable long post_id,HttpSession session){
+        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER) == null){
+            throw new AuthorizationException("You must be logged in first!");
+        }
+        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        Optional<Post> optionalPost = this.postRepository.findById(post_id);
+        if(!optionalPost.isPresent()){
+            throw  new NotFoundException("No such post found!");
+        }
+        Post post = optionalPost.get();
+        post.removeUser(currentUser);
+        post.setPoints(post.getPoints()-1);
+        this.postRepository.save(post);
+
+        return new ResponseEntity<>("downvoting done correctly!", HttpStatus.OK);
+    }
+
+    @PostMapping("/posts/upvote/{post_id}")
+    public ResponseEntity<String> upvotePost(@PathVariable long post_id,HttpSession session){
+        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER) == null){
+            throw new AuthorizationException("You must be logged in first!");
+        }
+        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        Optional<Post> optionalPost = this.postRepository.findById(post_id);
+        if(!optionalPost.isPresent()){
+            throw  new NotFoundException("No such post found!");
+        }
+        Post post = optionalPost.get();
+        post.addUser(currentUser);
+        post.setPoints(post.getPoints()+1);
+        this.postRepository.save(post);
+
+        return new ResponseEntity<>("upvoting done correctly!", HttpStatus.OK);
     }
 
 }
