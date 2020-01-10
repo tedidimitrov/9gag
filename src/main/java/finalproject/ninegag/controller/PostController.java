@@ -67,4 +67,9 @@ public class PostController extends AbstractController{
         return posts;
     }
 
+    @GetMapping("/posts/getByDate")
+    public List<Post> getAllByDateDesc(){
+        return this.postRepository.findAllByOrderByDateUploadedDesc();
+    }
+
 }

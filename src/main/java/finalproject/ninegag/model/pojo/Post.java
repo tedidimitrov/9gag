@@ -26,7 +26,7 @@ public class Post {
     private long id;
     @Column
     private String title;
-    @Column
+    @Column(name = "date_uploaded")
     private LocalDateTime dateUploaded;
     @Column
     private String imageUrl;

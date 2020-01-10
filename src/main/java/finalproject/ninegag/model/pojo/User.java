@@ -1,5 +1,6 @@
 package finalproject.ninegag.model.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import finalproject.ninegag.model.dto.RegisterUserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,6 +36,7 @@ public class User {
     @Column
     private String email;
     @Column
+    @JsonIgnore
     private String password;
     @Column
     private LocalDateTime dateRegistered;
@@ -44,7 +46,7 @@ public class User {
         setFirstName(userDTO.getFirstName());
         setLastName(userDTO.getLastName());
         setEmail(userDTO.getEmail());
-        setPassword(userDTO.getPassword()); //TODO ENCRYPT PASSWORD;
+        setPassword(userDTO.getPassword());
         setDateRegistered(LocalDateTime.now());
     }
 
