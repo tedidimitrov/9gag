@@ -1,5 +1,6 @@
 package finalproject.ninegag.controller;
 
+import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.MakePostDTO;
 import finalproject.ninegag.model.dto.ReadyPostDTO;
@@ -7,15 +8,13 @@ import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.mail.Session;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class PostController extends AbstractController{
@@ -37,6 +36,16 @@ public class PostController extends AbstractController{
 
         ReadyPostDTO readyPostDTO =new ReadyPostDTO(post);
         return readyPostDTO;
+    }
+
+    //Problem working via repository
+    @GetMapping("/posts/{id}")
+    public ReadyPostDTO getPostById(@PathVariable long id){
+        Post post = postRepository.getById(id);
+        if(post != null){
+            return new ReadyPostDTO(post);
+        }
+        throw new NotFoundException("No video corresponding to that id.");
     }
 
 }

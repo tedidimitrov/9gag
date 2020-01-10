@@ -29,9 +29,13 @@ public enum Category {
     private static final long LAST_ID = 10;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     Category(int id) {
+        this.id = id;
+    }
+
+    public void setId(long id) {
         this.id = id;
     }
 

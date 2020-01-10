@@ -4,24 +4,21 @@ import finalproject.ninegag.exceptions.AuthorizationException;
 import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dao.UserDAO;
-import finalproject.ninegag.model.dto.LoginUserDTO;
-import finalproject.ninegag.model.dto.RegisterUserDTO;
-import finalproject.ninegag.model.dto.UserWithoutPasswordDTO;
+import finalproject.ninegag.model.dto.*;
 import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.PostRepository;
 import finalproject.ninegag.model.repository.UserRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.mail.Session;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.sql.SQLException;
@@ -31,6 +28,9 @@ import java.util.List;
 public class UserController extends AbstractController{
 
     public static final String SESSION_KEY_LOGGED_USER = "logged_user";
+
+    @Autowired
+    private PostDAO postDAO;
 
     @Autowired
     private PostRepository postRepository;
@@ -46,6 +46,8 @@ public class UserController extends AbstractController{
             if(userRepository.existsByEmail(userDTO.getEmail())){
                 throw  new AuthorizationException("Already existing account!");
             }
+        }else{
+            throw  new BadRequestException("Passwords mismatch");
         }
         //add to database
         userRepository.save(user);
@@ -70,8 +72,9 @@ public class UserController extends AbstractController{
     }
 
     @PostMapping("/users/logout")
-    public void logout(HttpSession session){
+    public ResponseEntity<String> logout(HttpSession session){
         session.invalidate();
+        return new ResponseEntity<>("Logged out successfully!",HttpStatus.OK);
     }
 
     @GetMapping("users/posts")
@@ -80,8 +83,33 @@ public class UserController extends AbstractController{
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-        List<Post> posts = postRepository.findAllByUser_Id(user.getId());
+        List<Post> posts = postDAO.getPostsByUser(user);
         return posts;
+    }
+
+    @PutMapping("/users/changeUsername")
+    public ResponseEntity<String> changeUsername(@RequestBody ChangeUsernameDTO usernameDTO, HttpSession session){
+        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
+            throw new AuthorizationException("You must login first!");
+        }
+        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        currentUser.setUser_name(usernameDTO.getUsernameAfterChange());
+        userRepository.save(currentUser);
+        return new ResponseEntity<>("Username changed successfully!", HttpStatus.OK);
+    }
+
+    @PutMapping("/users/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDTO userDTO, HttpSession session){
+        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
+            throw new AuthorizationException("You must login first!");
+        }
+        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        if(!BCrypt.checkpw(userDTO.getPasswordBeforeChange(),currentUser.getPassword())){
+            throw new BadRequestException("Mismatching old password!");
+        }
+        currentUser.setPassword(userDTO.getPasswordAfterChange());
+        userRepository.save(currentUser);
+        return new ResponseEntity<>("Password changed successfully!", HttpStatus.OK);
     }
 
     private boolean passwordValid(LoginUserDTO userDTO) {
