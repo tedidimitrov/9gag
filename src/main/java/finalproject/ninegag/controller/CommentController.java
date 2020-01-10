@@ -142,15 +142,6 @@ public class CommentController extends AbstractController {
     @PostMapping("/comments/{comment_id}/downvote")
     public Comment downvote(@PathVariable(name = "comment_id") long commentId,
                           HttpSession session) throws SQLException{
-
-        throw new NotFoundException("Comment not found");
-    }
-
-    @SneakyThrows
-    @PutMapping("/{post_id}/comments/{comment_id}/downvote")
-    public Comment downvote(@PathVariable(name = "post_id") long postId,
-                          @PathVariable(name = "comment_id") long commentId,
-                          HttpSession session){
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");

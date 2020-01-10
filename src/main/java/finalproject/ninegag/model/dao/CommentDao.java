@@ -70,30 +70,27 @@ public class CommentDao{
             }
         }
 
-    public void downvoteComment(User u, Comment c) throws SQLException {
+    public void downvoteComment(User user, Comment comment) throws SQLException {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
-            if (isCommentDownvoted(u, c)) {
-                String removeFromDownvotes = DELETE_DOWNVOTED_COMMENT_BY_USER_ID ;
-                try(PreparedStatement statement = connection.prepareStatement(removeFromDownvotes);) {
-                    statement.setLong(1, u.getId());
-                    statement.setLong(2, c.getId());
+            if (isCommentDownvoted(user, comment)) {
+                try(PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
+                    statement.setLong(1, user.getId());
+                    statement.setLong(2, comment.getId());
                     statement.executeUpdate();
                 }
             } else {
                 try {
                     connection.setAutoCommit(false);
-                    if (isCommentUpvoted(u, c)) {
-                        String removeFromUpvotes = DELETE_UPVOTED_COMMENT_BY_USER_ID;
-                        try(PreparedStatement statement = connection.prepareStatement(removeFromUpvotes);) {
-                            statement.setLong(1, u.getId());
-                            statement.setLong(2, c.getId());
+                    if (isCommentUpvoted(user, comment)) {
+                        try(PreparedStatement statement = connection.prepareStatement(DELETE_UPVOTED_COMMENT_BY_USER_ID);) {
+                            statement.setLong(1, user.getId());
+                            statement.setLong(2, comment.getId());
                             statement.executeUpdate();
                         }
                     }
-                    String downvote = INSERT_INTO_DOWNVOTED;
-                    try(PreparedStatement statement = connection.prepareStatement(downvote);) {
-                        statement.setLong(1, u.getId());
-                        statement.setLong(2, c.getId());
+                    try(PreparedStatement statement = connection.prepareStatement(INSERT_INTO_DOWNVOTED);) {
+                        statement.setLong(1, user.getId());
+                        statement.setLong(2, comment.getId());
                         statement.executeUpdate();
 
                         connection.commit();
@@ -108,9 +105,9 @@ public class CommentDao{
     }
 
     public long getPoints(Comment comment) throws SQLException{
-        String sql = "SELECT COUNT(uuc.comment_id) AS upvoted, COUNT(udv.comment_id) as downvoted\n" +
-                "FROM users_downvoted_comments AS udv  \n" +
-                "RIGHT JOIN final_project.comments AS c ON udv.comment_id = id\n" +
+        String sql = "SELECT COUNT(uuc.comment_id) AS upvoted, COUNT(udv.comment_id) as downvoted " +
+                "FROM users_downvoted_comments AS udv " +
+                "RIGHT JOIN final_project.comments AS c ON udv.comment_id = id " +
                 "LEFT JOIN users_upvoted_comments AS uuc ON uuc.comment_id = id;";
         try(Connection connection = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)){
@@ -120,13 +117,11 @@ public class CommentDao{
             long y = resultSet.getInt("downvoted");
             return x - y;
         }
-
     }
-
 
     private boolean isCommentUpvoted(User user, Comment comment) throws SQLException {
                 try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-                     PreparedStatement statement = connection.prepareStatement(SELECT_UPVOTED_COMMENT_BY_USER_ID)) {
+                    PreparedStatement statement = connection.prepareStatement(SELECT_UPVOTED_COMMENT_BY_USER_ID)) {
                         statement.setLong(1, user.getId());
                         statement.setLong(2, comment.getId());
 
@@ -135,11 +130,11 @@ public class CommentDao{
                     }
     }
 
-    private boolean isCommentDownvoted(User u, Comment c) throws SQLException {
+    private boolean isCommentDownvoted(User user, Comment comment) throws SQLException {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement statement = connection.prepareStatement(SELECT_DOWNVOTED_COMMENT_BY_USER_ID)) {
-            statement.setLong(1, u.getId());
-            statement.setLong(2, c.getId());
+            statement.setLong(1, user.getId());
+            statement.setLong(2, comment.getId());
             ResultSet resultSet = statement.executeQuery();
             return resultSet.next();
         }
