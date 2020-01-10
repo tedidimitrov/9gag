@@ -54,7 +54,7 @@ public class PostDAO {
                         rows.getString("image_url"),
                         rows.getInt("points"),
                         user,
-                        Category.values()[rows.getInt("category_id")]);
+                        new Category(rows.getLong("category_id")));
                 posts.add(post);
             }
             return posts;

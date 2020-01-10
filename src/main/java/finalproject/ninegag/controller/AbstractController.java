@@ -15,6 +15,18 @@ import java.time.LocalDateTime;
 @Validated
 public abstract class AbstractController {
 
+
+    @ExceptionHandler({NullPointerException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDTO handleNullPointerException(NullPointerException e){
+        ErrorDTO errorDTO = new ErrorDTO(
+                e.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+        return errorDTO;
+    }
+
     @ExceptionHandler({NotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorDTO handleNotFound(Exception e){

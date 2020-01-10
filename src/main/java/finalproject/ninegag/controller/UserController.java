@@ -56,6 +56,7 @@ public class UserController extends AbstractController{
         return responseDTO;
     }
 
+    @SneakyThrows
     @PostMapping("/users/login")
     public UserWithoutPasswordDTO login(@RequestBody LoginUserDTO userDTO, HttpSession session) {
 
@@ -83,7 +84,7 @@ public class UserController extends AbstractController{
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-        List<Post> posts = postDAO.getPostsByUser(user);
+        List<Post> posts = postRepository.findAllByUser_Id(user.getId());
         return posts;
     }
 
