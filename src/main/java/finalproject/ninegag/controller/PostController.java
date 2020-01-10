@@ -73,10 +73,10 @@ public class PostController extends AbstractController{
     }
 
     @GetMapping("/posts/titles/{title}")
-    public Post getPostByTitle(@PathVariable String title){
-        Post post =this.postRepository.getByTitle(title);
-        if(post != null){
-            return post;
+    public List<Post> getPostByTitle(@PathVariable String title){
+        List<Post> posts =this.postRepository.getByTitle(title);
+        if(posts != null){
+            return posts;
         }
         throw new NotFoundException("Not found such post!");
     }
