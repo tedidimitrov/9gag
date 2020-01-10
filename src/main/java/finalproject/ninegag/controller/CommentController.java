@@ -7,9 +7,13 @@ import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.CommentDao;
 import finalproject.ninegag.model.dto.CommentDTO;
+import finalproject.ninegag.model.dto.MakePostDTO;
+import finalproject.ninegag.model.dto.ReadyPostDTO;
 import finalproject.ninegag.model.pojo.Comment;
+import finalproject.ninegag.model.pojo.Post;
 import finalproject.ninegag.model.pojo.User;
 import finalproject.ninegag.model.repository.CommentRepository;
+import finalproject.ninegag.model.repository.PostRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +24,16 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
-public class CommentController {
+public class CommentController extends AbstractController {
 
     @Autowired
     private CommentRepository commentRepository;
     @Autowired
+    PostRepository postRepository;
+    @Autowired
     private CommentDao commentDao;
 
-    @PostMapping("/{post_id}/comments/add")
+    @PostMapping("/posts/{post_id}/comments")
     public Comment addComment(@RequestBody CommentDTO commentDto,
                               @PathVariable(name = "post_id") long postId,
                               HttpSession session){
@@ -36,32 +42,36 @@ public class CommentController {
             throw new AuthorizationException("You must login first!");
         }
 
-        //todo post.getId()
+        Optional<Post> post = postRepository.findById(postId);
 
-        Comment comment = new Comment(commentDto);
-        comment.setDatePosted(LocalDateTime.now());
-        comment.setUser(user);
-        //todo comment.setPost(post);
-        commentRepository.save(comment);
-        return comment;
-    }
-
-    @GetMapping("/{post_id}/comments/{comment_id}")
-    public Comment getCommentById(@PathVariable(name = "post_id") long postId,
-                           @PathVariable(name = "comment_id") long commentId){
-
-        //todo post.isPresent()
-
-        if(!commentRepository.existsById(commentId)){
-            throw new NotFoundException("Comment not found");
+        if(post.isPresent()){
+            Comment comment = new Comment(commentDto);
+            comment.setDatePosted(LocalDateTime.now());
+            comment.setPost(post.get());
+            comment.setUser(user);
+            commentRepository.save(comment);
+            return comment;
         }
-
-        return commentRepository.getById(commentId);
+        else{
+            throw new NotFoundException("Post not found!");
+        }
     }
 
-    @DeleteMapping("/{post_id}/comments/{comment_id}/delete")
-    public Comment deleteComment(@PathVariable(name = "post_id") long postId,
-                                 @PathVariable(name = "comment_id") long commentId,
+    @GetMapping("/comments/{comment_id}")
+    public Comment getCommentById(@PathVariable(name = "comment_id") long commentId){
+
+        Optional<Comment> comment = commentRepository.findById(commentId);
+
+        if(comment.isPresent()){
+            return comment.get();
+        }
+        else{
+            throw new NotFoundException("Comment not found!");
+        }
+    }
+
+    @DeleteMapping("/comments/{comment_id}")
+    public Comment deleteComment(@PathVariable(name = "comment_id") long commentId,
                                  HttpSession session){
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
@@ -69,42 +79,22 @@ public class CommentController {
             throw new AuthorizationException("You must login first!");
         }
 
-        //todo post.isPresent()
+        Optional<Comment> commentToBeDeleted = commentRepository.findById(commentId);
 
-        if(!commentRepository.existsById(commentId)){
+        if(commentToBeDeleted.isPresent()){
+            if(commentToBeDeleted.get().getUser().getId() != user.getId()){
+                throw new BadRequestException("You can only delete your own comments!");
+            }
+            commentRepository.delete(commentToBeDeleted.get());
+            return commentToBeDeleted.get();
+        }
+        else{
             throw new NotFoundException("Comment not found");
         }
-
-        Comment commentToBeDeleted = commentRepository.getById(commentId);
-
-        if(commentToBeDeleted.getUser().getId() != user.getId()){
-            throw new BadRequestException("You can only delete your own comments!");
-        }
-        commentRepository.deleteById(commentId);
-        return commentToBeDeleted;
     }
 
-//    @PutMapping("/{post_id}/comments/{comment_id}/edit")
-//    public Comment editComment(@PathVariable(name = "post_id") long postId,
-//                               @PathVariable(name = "comment_id") long commentId,
-//                               HttpSession session){
-//
-//        User user = (User) session.getAttribute(""); //TODO session
-//        if(user == null){
-//            throw new AuthorizationException();
-//         }
-//        todo post.isPresent()
-//
-//        Optional<Comment> comment = commentRepository.findById(commentId);
-//        if(comment.isEmpty()){
-//            throw new NullPointerException("Comment not found");
-//        }
-//
-//
-//    }
-    @PostMapping("/{post_id}/comments/{comment_id}/reply")
+    @PostMapping("/comments/{comment_id}")
     public Comment reply(@RequestBody CommentDTO commentDTO,
-                         @PathVariable(name = "post_id") long postId,
                          @PathVariable(name = "comment_id") long commentId,
                          HttpSession session){
 
@@ -112,72 +102,71 @@ public class CommentController {
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-        //todo post.isPresent()
 
-        if(!commentRepository.existsById(commentId)){
+        Optional<Comment> commentToBeReplied = commentRepository.findById(commentId);
+
+        if(commentToBeReplied.isPresent()){
+            Comment reply = new Comment(commentDTO);
+            reply.setDatePosted(LocalDateTime.now());
+            reply.setUser(user);
+            reply.setRepliedTo(commentToBeReplied.get());
+            commentRepository.save(reply);
+            return reply;
+        }
+        else{
             throw new NotFoundException("Comment not found");
         }
-
-        Comment commentToBeReplied = commentRepository.getById(commentId);
-        Comment reply = new Comment(commentDTO);
-
-        reply.setDatePosted(LocalDateTime.now());
-        reply.setUser(user);
-        //todo comment.setPost(post);
-        reply.setRepliedTo(commentToBeReplied);
-        commentRepository.save(reply);
-        return reply;
     }
 
 
-    @SneakyThrows
-    @PostMapping("/{post_id}/comments/{comment_id}/upvote")
-    public Comment upvote(@PathVariable(name = "post_id") long postId,
-                          @PathVariable(name = "comment_id") long commentId,
-                          HttpSession session){
+
+    @PostMapping("/comments/{comment_id}/upvote")
+    public Comment upvote(@PathVariable(name = "comment_id") long commentId,
+                          HttpSession session) throws SQLException {
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
 
-        //todo post verification
+        Optional<Comment> comment = commentRepository.findById(commentId);
 
-        if(!commentRepository.existsById(commentId)){
-            throw new NotFoundException("Comment not found");
+        if(comment.isPresent()){
+            commentDao.upvoteComment(user, comment.get());
+            return comment.get();
         }
-
-        Comment comment = commentRepository.getById(commentId);
-
-        commentDao.upvoteComment(user, comment);
-
-        return comment;
-
+        throw new NotFoundException("Comment not found");
     }
 
-    @SneakyThrows
-    @PostMapping("/{post_id}/comments/{comment_id}/downvote")
-    public Comment downvote(@PathVariable(name = "post_id") long postId,
-                          @PathVariable(name = "comment_id") long commentId,
-                          HttpSession session){
+    @PostMapping("/comments/{comment_id}/downvote")
+    public Comment downvote(@PathVariable(name = "comment_id") long commentId,
+                          HttpSession session) throws SQLException{
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
 
-        //todo post verification
-
-        if(!commentRepository.existsById(commentId)){
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if(comment.isPresent()){
+            commentDao.downvoteComment(user, comment.get());
+            return comment.get();
+        }
+        else{
             throw new NotFoundException("Comment not found");
         }
-
-        Comment comment = commentRepository.getById(commentId);
-
-        commentDao.downvoteComment(user, comment);
-
-        return comment;
-
     }
 
+    @GetMapping("/comments/{comment_id}/points")
+    public long getPoints(@PathVariable(name = "comment_id") long comment_id) throws SQLException {
+
+        Optional<Comment> comment = commentRepository.findById(comment_id);
+
+        if(comment.isPresent()){
+            return commentDao.getPoints(comment.get());
+        }
+        else{
+            throw new NotFoundException("Comment not found!");
+        }
+    }
 }

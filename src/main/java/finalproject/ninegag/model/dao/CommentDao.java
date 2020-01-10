@@ -17,10 +17,10 @@ public class CommentDao{
 
 
     public static final String SELECT_UPVOTED_COMMENT_BY_USER_ID =
-            "SELECT FROM users_upvoted_comments WHERE user_id = ? AND comment_id = ?";
+            "SELECT user_id, comment_id FROM users_upvoted_comments WHERE user_id = ? AND comment_id = ?";
 
     public static final String SELECT_DOWNVOTED_COMMENT_BY_USER_ID =
-            "SELECT FROM users_downvoted_comments WHERE user_id = ? AND comment_id = ?";
+            "SELECT user_id, comment_id FROM users_downvoted_comments WHERE user_id = ? AND comment_id = ?";
 
     public static final String DELETE_UPVOTED_COMMENT_BY_USER_ID =
             "DELETE FROM users_upvoted_comments WHERE user_id = ? AND comment_id = ?";
@@ -32,36 +32,34 @@ public class CommentDao{
             "INSERT INTO users_upvoted_comments (user_id, comment_id) VALUES (?, ?)";
 
     public static final String INSERT_INTO_DOWNVOTED =
-            "INSER INTO users_downvoted_comments (user_id, comment_id) VALUES (?, ?)";
+            "INSERT INTO users_downvoted_comments (user_id, comment_id) VALUES (?, ?)";
 
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public void upvoteComment(User u, Comment c) throws SQLException {
+    public void upvoteComment(User user, Comment comment) throws SQLException {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
-            if (isCommentUpvoted(u, c)) {
+            if (isCommentUpvoted(user, comment)) {
                 String removeFromUpvotes = DELETE_UPVOTED_COMMENT_BY_USER_ID;
                 try(PreparedStatement statement = connection.prepareStatement(removeFromUpvotes);) {
-                    statement.setLong(1, u.getId());
-                    statement.setLong(2, c.getId());
+                    statement.setLong(1, user.getId());
+                    statement.setLong(2, comment.getId());
                     statement.executeUpdate();
                 }
             } else {
                 try {
                     connection.setAutoCommit(false);
-                    if (isCommentDownvoted(u, c)) {
-                        String removeFromDownvotes = DELETE_DOWNVOTED_COMMENT_BY_USER_ID;
-                        try (PreparedStatement statement = connection.prepareStatement(removeFromDownvotes);) {
-                            statement.setLong(1, u.getId());
-                            statement.setLong(2, c.getId());
+                    if (isCommentDownvoted(user, comment)) {
+                        try (PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
+                            statement.setLong(1, user.getId());
+                            statement.setLong(2, comment.getId());
                             statement.executeUpdate();
                         }
                     }
-                    String upvote = INSERT_INTO_UPVOTED;
-                    try (PreparedStatement statement = connection.prepareStatement(upvote);) {
-                        statement.setLong(1, u.getId());
-                        statement.setLong(2, c.getId());
+                    try (PreparedStatement statement = connection.prepareStatement(INSERT_INTO_UPVOTED)) {
+                        statement.setLong(1, user.getId());
+                        statement.setLong(2, comment.getId());
                         statement.executeUpdate();
                     }
                     connection.commit();
@@ -112,13 +110,28 @@ public class CommentDao{
         }
     }
 
+    public long getPoints(Comment comment) throws SQLException{
+        String sql = "SELECT COUNT(uuc.comment_id) AS upvoted, COUNT(udv.comment_id) as downvoted\n" +
+                "FROM users_downvoted_comments AS udv  \n" +
+                "RIGHT JOIN final_project.comments AS c ON udv.comment_id = id\n" +
+                "LEFT JOIN users_upvoted_comments AS uuc ON uuc.comment_id = id;";
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)){
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            long x = resultSet.getInt("upvoted");
+            long y = resultSet.getInt("downvoted");
+            return x - y;
+        }
 
-    private boolean isCommentUpvoted(User u, Comment c) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = SELECT_UPVOTED_COMMENT_BY_USER_ID;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, u.getId());
-            statement.setLong(2, c.getId());
+    }
+
+
+    private boolean isCommentUpvoted(User user, Comment comment) throws SQLException {
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement statement = connection.prepareStatement(SELECT_UPVOTED_COMMENT_BY_USER_ID)){
+            statement.setLong(1, user.getId());
+            statement.setLong(2, comment.getId());
 
             ResultSet resultSet = statement.executeQuery();
             return resultSet.next();
@@ -126,15 +139,15 @@ public class CommentDao{
     }
 
     private boolean isCommentDownvoted(User u, Comment c) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = SELECT_DOWNVOTED_COMMENT_BY_USER_ID;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement statement = connection.prepareStatement(SELECT_DOWNVOTED_COMMENT_BY_USER_ID)) {
             statement.setLong(1, u.getId());
             statement.setLong(2, c.getId());
-
             ResultSet resultSet = statement.executeQuery();
             return resultSet.next();
         }
     }
+
+
 
 }

@@ -32,10 +32,10 @@ public class Comment {
     @JoinColumn(name = "post_id")
     private Post post;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "owner_id")
     private User user;
     @OneToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "replied_to_id")
     private Comment repliedTo;
 
     public Comment(CommentDTO commentDTO){
