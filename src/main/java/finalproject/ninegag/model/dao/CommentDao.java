@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Optional;
 
 @Component
 public class CommentDao{
@@ -39,39 +38,37 @@ public class CommentDao{
     private JdbcTemplate jdbcTemplate;
 
     public void upvoteComment(User user, Comment comment) throws SQLException {
-        try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
             if (isCommentUpvoted(user, comment)) {
-                String removeFromUpvotes = DELETE_UPVOTED_COMMENT_BY_USER_ID;
-                try(PreparedStatement statement = connection.prepareStatement(removeFromUpvotes);) {
+                try (PreparedStatement statement = connection.prepareStatement(DELETE_UPVOTED_COMMENT_BY_USER_ID);) {
                     statement.setLong(1, user.getId());
                     statement.setLong(2, comment.getId());
                     statement.executeUpdate();
                 }
             } else {
-                try {
                     connection.setAutoCommit(false);
                     if (isCommentDownvoted(user, comment)) {
                         try (PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
-                            statement.setLong(1, user.getId());
-                            statement.setLong(2, comment.getId());
-                            statement.executeUpdate();
+                            {
+                                statement.setLong(1, user.getId());
+                                statement.setLong(2, comment.getId());
+                                statement.executeUpdate();
+                            }
+                        }
+                        try (PreparedStatement statement = connection.prepareStatement(INSERT_INTO_UPVOTED)) {
+                                statement.setLong(1, user.getId());
+                                statement.setLong(2, comment.getId());
+                                statement.executeUpdate();
+                            connection.commit();
+                            connection.setAutoCommit(true);
+                        } catch (SQLException e) {
+                            connection.rollback();
+                            throw new SQLException("The comment wasn't upvoted!", e);
                         }
                     }
-                    try (PreparedStatement statement = connection.prepareStatement(INSERT_INTO_UPVOTED)) {
-                        statement.setLong(1, user.getId());
-                        statement.setLong(2, comment.getId());
-                        statement.executeUpdate();
-                    }
-                    connection.commit();
-                    connection.setAutoCommit(true);
-                }
-                catch (SQLException e){
-                    connection.rollback();
-                    throw new SQLException("The comment wasn't upvoted!", e);
                 }
             }
         }
-    }
 
     public void downvoteComment(User u, Comment c) throws SQLException {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
@@ -128,14 +125,14 @@ public class CommentDao{
 
 
     private boolean isCommentUpvoted(User user, Comment comment) throws SQLException {
-        try(Connection connection = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement statement = connection.prepareStatement(SELECT_UPVOTED_COMMENT_BY_USER_ID)){
-            statement.setLong(1, user.getId());
-            statement.setLong(2, comment.getId());
+                try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+                     PreparedStatement statement = connection.prepareStatement(SELECT_UPVOTED_COMMENT_BY_USER_ID)) {
+                        statement.setLong(1, user.getId());
+                        statement.setLong(2, comment.getId());
 
-            ResultSet resultSet = statement.executeQuery();
-            return resultSet.next();
-        }
+                        ResultSet resultSet = statement.executeQuery();
+                        return resultSet.next();
+                    }
     }
 
     private boolean isCommentDownvoted(User u, Comment c) throws SQLException {
