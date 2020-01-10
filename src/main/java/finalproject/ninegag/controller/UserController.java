@@ -14,6 +14,7 @@ import finalproject.ninegag.model.repository.UserRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +32,6 @@ public class UserController extends AbstractController{
 
     public static final String SESSION_KEY_LOGGED_USER = "logged_user";
 
-    @Autowired
-    private UserDAO userDAO;
     @Autowired
     private PostRepository postRepository;
     @Autowired
@@ -56,13 +55,13 @@ public class UserController extends AbstractController{
     }
 
     @PostMapping("/users/login")
-    public UserWithoutPasswordDTO login(@RequestBody LoginUserDTO userDTO, HttpSession session) throws SQLException {
+    public UserWithoutPasswordDTO login(@RequestBody LoginUserDTO userDTO, HttpSession session) {
 
-        User user = userDAO.getByUserName(userDTO.getUsername());
+        User user = userRepository.findByEmail(userDTO.getEmail());
         if(user == null){
             throw new BadRequestException("Invalid Credentials");
         }
-        else if(passwordValid(user,userDTO)){
+        else if(passwordValid(userDTO)){
             session.setAttribute(SESSION_KEY_LOGGED_USER,user);
             UserWithoutPasswordDTO responseDTO =new UserWithoutPasswordDTO(user);
             return responseDTO;
@@ -85,9 +84,12 @@ public class UserController extends AbstractController{
         return posts;
     }
 
-    private boolean passwordValid(User user, LoginUserDTO userDTO) {
-        //TODO VALIDATE
-        return true;
+    private boolean passwordValid(LoginUserDTO userDTO) {
+        boolean identicalPasswords = BCrypt.checkpw(userDTO.getPassword(),userRepository.findByEmail(userDTO.getEmail()).getPassword());
+        if(identicalPasswords){
+            return true;
+        }
+        return false;
     }
 }
 

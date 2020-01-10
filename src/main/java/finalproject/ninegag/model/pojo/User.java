@@ -27,7 +27,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column
-    private String username;
+    private String user_name;
     @Column
     private String firstName;
     @Column
@@ -40,7 +40,7 @@ public class User {
     private LocalDateTime dateRegistered;
 
     public User(RegisterUserDTO userDTO){
-        setUsername(userDTO.getUsername());
+        setUser_name(userDTO.getUsername());
         setFirstName(userDTO.getFirstName());
         setLastName(userDTO.getLastName());
         setEmail(userDTO.getEmail());

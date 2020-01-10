@@ -20,7 +20,7 @@ public class UserWithoutPasswordDTO {
 
     public UserWithoutPasswordDTO(User user){
         setId(user.getId());
-        setUsername(user.getUsername());
+        setUsername(user.getUser_name());
         setFirstName(user.getFirstName());
         setLastName(user.getLastName());
         setEmail(user.getEmail());
