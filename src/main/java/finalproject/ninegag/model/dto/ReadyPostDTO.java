@@ -1,6 +1,6 @@
 package finalproject.ninegag.model.dto;
 
-import finalproject.ninegag.model.pojo.Post;
+import finalproject.ninegag.model.entity.Post;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

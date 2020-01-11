@@ -1,4 +1,4 @@
-package finalproject.ninegag.model.pojo;
+package finalproject.ninegag.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import finalproject.ninegag.model.dto.RegisterUserDTO;
@@ -6,13 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,7 @@
-package finalproject.ninegag.model.pojo;
+package finalproject.ninegag.model.entity;
 
 
 import finalproject.ninegag.model.dto.MakePostDTO;
-import finalproject.ninegag.model.dto.ReadyPostDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

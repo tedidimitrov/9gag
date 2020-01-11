@@ -1,6 +1,6 @@
 package finalproject.ninegag.model.dto;
 
-import finalproject.ninegag.model.pojo.Category;
+import finalproject.ninegag.model.entity.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

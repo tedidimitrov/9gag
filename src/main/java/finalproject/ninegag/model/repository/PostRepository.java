@@ -1,7 +1,6 @@
 package finalproject.ninegag.model.repository;
 
-import finalproject.ninegag.model.pojo.Post;
-import finalproject.ninegag.model.pojo.User;
+import finalproject.ninegag.model.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

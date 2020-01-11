@@ -5,19 +5,15 @@ import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.MakePostDTO;
 import finalproject.ninegag.model.dto.ReadyPostDTO;
-import finalproject.ninegag.model.pojo.Post;
-import finalproject.ninegag.model.pojo.User;
+import finalproject.ninegag.model.entity.Post;
+import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.Session;
 import javax.servlet.http.HttpSession;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

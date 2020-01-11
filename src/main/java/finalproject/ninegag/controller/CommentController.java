@@ -7,14 +7,11 @@ import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.CommentDao;
 import finalproject.ninegag.model.dto.CommentDTO;
-import finalproject.ninegag.model.dto.MakePostDTO;
-import finalproject.ninegag.model.dto.ReadyPostDTO;
-import finalproject.ninegag.model.pojo.Comment;
-import finalproject.ninegag.model.pojo.Post;
-import finalproject.ninegag.model.pojo.User;
+import finalproject.ninegag.model.entity.Comment;
+import finalproject.ninegag.model.entity.Post;
+import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.CommentRepository;
 import finalproject.ninegag.model.repository.PostRepository;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
