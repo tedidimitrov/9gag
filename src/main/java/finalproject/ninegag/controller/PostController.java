@@ -5,6 +5,7 @@ import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.MakePostDTO;
 import finalproject.ninegag.model.dto.ReadyPostDTO;
+import finalproject.ninegag.model.entity.Category;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.PostRepository;
@@ -12,9 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,12 +30,48 @@ import java.util.Optional;
 public class PostController extends AbstractController{
 
     public static final String SESSION_KEY_LOGGED_USER = "logged_user";
+    private static final String STORAGE_ABSOLUTE_PATH  = "D:\\Git\\uploads\\";
 
     @Autowired
     private PostRepository postRepository;
 
     @Autowired
     private PostDAO postDAO;
+
+    @PostMapping("/posts")
+    public Post uploadPost(@RequestPart(name = "file") MultipartFile file,
+                           @RequestParam String title,
+                           @RequestParam long id,
+                           HttpSession session) throws IOException {
+        User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
+        if(user == null){
+            throw new AuthorizationException("You must login first!");
+        }
+        if(file == null){
+            throw new NotFoundException("The file in not found!");
+        }
+
+        String extension = file.getOriginalFilename();
+        String pattern = "yyyy-MM-dd-hh-mm-ss";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        String postUrl = STORAGE_ABSOLUTE_PATH + title + LocalDateTime.now().format(formatter)+extension;
+        Path path = Paths.get(postUrl);
+        byte[] bytes = file.getBytes();
+
+        Files.write(path, bytes);
+
+        Post post = new Post();
+        post.setPoints(0);
+        //todo get category from db usingthe id
+        post.setCategory(new Category(id));
+        post.setDateUploaded(LocalDateTime.now());
+        post.setTitle(title);
+        post.setUser(user);
+        post.setImageUrl(postUrl);
+
+        postRepository.save(post);
+        return post;
+    }
 
     @PostMapping("/posts/create")
     public ReadyPostDTO addPost(@RequestBody MakePostDTO postDTO, HttpSession session){

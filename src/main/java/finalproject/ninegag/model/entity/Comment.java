@@ -36,7 +36,7 @@ public class Comment {
     private User user;
     @OneToOne
     @JoinColumn(name = "replied_to_id")
-    private Comment repliedTo;
+    private Comment parentComment;
 
     public Comment(CommentDTO commentDTO){
         setText(commentDTO.getText());

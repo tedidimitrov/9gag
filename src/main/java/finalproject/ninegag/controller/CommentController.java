@@ -107,7 +107,7 @@ public class CommentController extends AbstractController {
             Comment reply = new Comment(commentDTO);
             reply.setDatePosted(LocalDateTime.now());
             reply.setUser(user);
-            reply.setRepliedTo(commentToBeReplied.get());
+            reply.setParentComment(commentToBeReplied.get());
             commentRepository.save(reply);
             return reply;
         }
