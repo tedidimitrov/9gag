@@ -163,7 +163,12 @@ public class CommentController extends AbstractController {
         Optional<Comment> comment = commentRepository.findById(comment_id);
 
         if(comment.isPresent()){
-            return commentDao.getPoints(comment.get());
+            long points = commentDao.getPoints(comment.get());
+            if(points < 0){
+                return 0;
+            }else {
+                return points;
+            }
         }
         else{
             throw new NotFoundException("Comment not found!");

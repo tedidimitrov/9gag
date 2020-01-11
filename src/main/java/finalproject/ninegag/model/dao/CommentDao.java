@@ -33,6 +33,13 @@ public class CommentDao{
     public static final String INSERT_INTO_DOWNVOTED =
             "INSERT INTO users_downvoted_comments (user_id, comment_id) VALUES (?, ?)";
 
+    public static final String GET_POINTS_BY_COMMENT_ID =
+            "SELECT COUNT(uuc.comment_id) AS upvoted, COUNT(udv.comment_id) as downvoted\n" +
+            "FROM users_downvoted_comments AS udv\n" +
+            "RIGHT JOIN final_project.comments AS c ON udv.comment_id = id\n" +
+            "LEFT JOIN users_upvoted_comments AS uuc ON uuc.comment_id = id\n" +
+            "WHERE c.id = ?;";
+
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -46,29 +53,30 @@ public class CommentDao{
                     statement.executeUpdate();
                 }
             } else {
+                try {
                     connection.setAutoCommit(false);
                     if (isCommentDownvoted(user, comment)) {
-                        try (PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
-                            {
-                                statement.setLong(1, user.getId());
-                                statement.setLong(2, comment.getId());
-                                statement.executeUpdate();
-                            }
-                        }
-                        try (PreparedStatement statement = connection.prepareStatement(INSERT_INTO_UPVOTED)) {
-                                statement.setLong(1, user.getId());
-                                statement.setLong(2, comment.getId());
-                                statement.executeUpdate();
-                            connection.commit();
-                            connection.setAutoCommit(true);
-                        } catch (SQLException e) {
-                            connection.rollback();
-                            throw new SQLException("The comment wasn't upvoted!", e);
+                        try(PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
+                            statement.setLong(1, user.getId());
+                            statement.setLong(2, comment.getId());
+                            statement.executeUpdate();
                         }
                     }
+                    try(PreparedStatement statement = connection.prepareStatement(INSERT_INTO_UPVOTED);) {
+                        statement.setLong(1, user.getId());
+                        statement.setLong(2, comment.getId());
+                        statement.executeUpdate();
+
+                        connection.commit();
+                        connection.setAutoCommit(true);
+                    }
+                }catch (SQLException e){
+                    connection.rollback();
+                    throw new SQLException("This comments wasn't upvoted!" , e);
                 }
             }
         }
+    }
 
     public void downvoteComment(User user, Comment comment) throws SQLException {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
@@ -105,12 +113,9 @@ public class CommentDao{
     }
 
     public long getPoints(Comment comment) throws SQLException{
-        String sql = "SELECT COUNT(uuc.comment_id) AS upvoted, COUNT(udv.comment_id) as downvoted " +
-                "FROM users_downvoted_comments AS udv " +
-                "RIGHT JOIN final_project.comments AS c ON udv.comment_id = id " +
-                "LEFT JOIN users_upvoted_comments AS uuc ON uuc.comment_id = id;";
         try(Connection connection = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)){
+            PreparedStatement statement = connection.prepareStatement(GET_POINTS_BY_COMMENT_ID)){
+            statement.setLong(1, comment.getId());
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
             long x = resultSet.getInt("upvoted");
