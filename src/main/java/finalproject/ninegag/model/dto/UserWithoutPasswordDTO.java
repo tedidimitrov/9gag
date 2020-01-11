@@ -1,11 +1,9 @@
 package finalproject.ninegag.model.dto;
 
-import finalproject.ninegag.model.pojo.User;
+import finalproject.ninegag.model.entity.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

@@ -1,7 +1,7 @@
 package finalproject.ninegag.model.dao;
 
-import finalproject.ninegag.model.pojo.Comment;
-import finalproject.ninegag.model.pojo.User;
+import finalproject.ninegag.model.entity.Comment;
+import finalproject.ninegag.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

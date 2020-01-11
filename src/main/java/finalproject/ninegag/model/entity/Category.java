@@ -1,4 +1,4 @@
-package finalproject.ninegag.model.pojo;
+package finalproject.ninegag.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

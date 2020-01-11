@@ -1,4 +1,4 @@
-package finalproject.ninegag.model.pojo;
+package finalproject.ninegag.model.entity;
 
 
 import finalproject.ninegag.model.dto.CommentDTO;
