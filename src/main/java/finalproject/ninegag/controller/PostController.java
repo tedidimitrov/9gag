@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,11 +43,11 @@ public class PostController extends AbstractController{
         return readyPostDTO;
     }
 
-    public Post getPost(long id){
+    public ReadyPostDTO getPost(long id){
         Optional<Post> optionalPost = postRepository.findById(id);
         if(optionalPost.isPresent()){
             Post post = optionalPost.get();
-            return post;
+            return new ReadyPostDTO(post);
         }
         throw new NotFoundException("Post not found!");
 
@@ -54,26 +55,42 @@ public class PostController extends AbstractController{
 
     @GetMapping("/posts/{id}")
     public ReadyPostDTO getPostById(@PathVariable long id){
-        ReadyPostDTO readyPostDTO = new ReadyPostDTO(getPost(id));
-        return readyPostDTO;
+        Optional<Post> post = postRepository.findById(id);
+        if(!post.isPresent()){
+            throw new NotFoundException("No such post found");
+        }
+        return new ReadyPostDTO(post.get());
     }
 
     @GetMapping("/posts")
-    public List<Post> getAllPosts(){
+    public List<ReadyPostDTO> getAllPosts(){
         List<Post> posts =this.postRepository.findAll();
-        return posts;
+        List<ReadyPostDTO> readyPosts = new ArrayList<>();
+        for(Post post: posts){
+            readyPosts.add(new ReadyPostDTO(post));
+        }
+        return readyPosts;
     }
 
     @GetMapping("/posts/getByDate")
-    public List<Post> getAllByDateDesc(){
-        return this.postRepository.findAllByOrderByDateUploadedDesc();
+    public List<ReadyPostDTO> getAllByDateDesc(){
+        List<Post> posts = this.postRepository.findAllByOrderByDateUploadedDesc();
+        List<ReadyPostDTO> readyPosts = new ArrayList<>();
+        for(Post post: posts){
+            readyPosts.add(new ReadyPostDTO(post));
+        }
+        return readyPosts;
     }
 
     @GetMapping("/posts/titles/{title}")
-    public List<Post> getPostByTitle(@PathVariable String title){
+    public List<ReadyPostDTO> getPostByTitle(@PathVariable String title){
         List<Post> posts =this.postRepository.getByTitle(title);
         if(posts != null){
-            return posts;
+            List<ReadyPostDTO> readyPosts = new ArrayList<>();
+            for(Post post: posts){
+                readyPosts.add(new ReadyPostDTO(post));
+            }
+            return readyPosts;
         }
         throw new NotFoundException("Not found such post!");
     }
@@ -89,8 +106,14 @@ public class PostController extends AbstractController{
             throw  new NotFoundException("No such post found!");
         }
         Post post = optionalPost.get();
-        post.removeUser(currentUser);
-        post.setPoints(post.getPoints()-1);
+        if(post.getDownvoters().contains(currentUser)){
+            post.removeDownvoter(currentUser);
+            post.setPoints(post.getPoints()+1);
+        }
+        else{
+            post.addDownvoter(currentUser);
+            post.setPoints(Math.max(post.getPoints() - 1, 0));
+        }
         this.postRepository.save(post);
 
         return new ResponseEntity<>("downvoting done correctly!", HttpStatus.OK);
@@ -107,10 +130,14 @@ public class PostController extends AbstractController{
             throw  new NotFoundException("No such post found!");
         }
         Post post = optionalPost.get();
-        post.addUser(currentUser);
-        post.setPoints(post.getPoints()+1);
+        if(post.getUpvoters().contains(currentUser)){
+            post.removeUpvoter(currentUser);
+            post.setPoints(Math.max(post.getPoints() - 1, 0));
+        } else{
+            post.setPoints(post.getPoints()+1);
+            post.addUpvoter(currentUser);
+        }
         this.postRepository.save(post);
-
         return new ResponseEntity<>("upvoting done correctly!", HttpStatus.OK);
     }
 

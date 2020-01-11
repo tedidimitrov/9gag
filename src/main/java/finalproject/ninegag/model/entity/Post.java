@@ -18,7 +18,7 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Entity(name = "Post")
 @Table(name = "posts")
 public class Post {
 
@@ -36,22 +36,32 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "post_owner_id")
     private User user;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name ="category_id")
     private Category category;
     //problems below
     @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @JoinTable(name = "users_upvoted_posts",joinColumns = @JoinColumn(name ="posts_id"),inverseJoinColumns =@JoinColumn(name="user_id"))
+    private List<User> upvoters = new ArrayList<>();
+    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     @JoinTable(name = "users_downvoted_posts",joinColumns = @JoinColumn(name ="posts_id"),inverseJoinColumns =@JoinColumn(name="user_id"))
-    @Transient
-    private List<User> users = new ArrayList<>();
+    private List<User> downvoters = new ArrayList<>();
 
-    public void addUser(User user){
-        this.users.add(user);
-        user.getPosts().add(this);
+    public void addUpvoter(User user){
+        this.upvoters.add(user);
+        user.getUpvotedPosts().add(this);
     }
-    public void removeUser(User user){
-        this.users.remove(user);
-        user.getPosts().remove(this);
+    public void removeUpvoter(User user){
+        this.upvoters.remove(user);
+        user.getUpvotedPosts().remove(this);
+    }
+    public void addDownvoter(User user){
+        this.downvoters.add(user);
+        user.getDownvotedPosts().add(this);
+    }
+    public void removeDownvoter(User user){
+        this.downvoters.remove(user);
+        user.getDownvotedPosts().remove(this);
     }
 
     @Override
@@ -74,6 +84,7 @@ public class Post {
         setUser(user);
 
     }
+
 
     @Override
     public String toString() {

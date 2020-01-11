@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
@@ -20,7 +22,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Entity(name = "User")
 @Table(name = "users")
 public class User {
 
@@ -40,11 +42,12 @@ public class User {
     private String password;
     @Column
     private LocalDateTime dateRegistered;
-    //problems below
-    @ManyToMany(mappedBy = "users")
-    @Transient
-    private List<Post> posts= new ArrayList<>();
-
+    @ManyToMany(mappedBy = "upvoters",fetch = FetchType.EAGER)
+    private List<Post> upvotedPosts = new ArrayList<>();
+    @ManyToMany(mappedBy = "downvoters")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<Post> downvotedPosts = new ArrayList<>();
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -75,13 +76,17 @@ public class UserController extends AbstractController{
     }
 
     @GetMapping("users/posts")
-    public List<Post> getPosts(HttpSession session) throws SQLException {
+    public List<ReadyPostDTO> getPosts(HttpSession session) throws SQLException {
         User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
         List<Post> posts = postRepository.findAllByUser_Id(user.getId());
-        return posts;
+        List<ReadyPostDTO> readyPosts = new ArrayList<>();
+        for(Post post: posts){
+            readyPosts.add(new ReadyPostDTO(post));
+        }
+        return readyPosts;
     }
 
     @PutMapping("/users/changeUsername")
