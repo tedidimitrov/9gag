@@ -6,6 +6,8 @@ import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.*;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
+import finalproject.ninegag.model.mail.SuccessfullyChangedPassword;
+import finalproject.ninegag.model.mail.WelcomeToCommunity;
 import finalproject.ninegag.model.repository.PostRepository;
 import finalproject.ninegag.model.repository.UserRepository;
 import lombok.SneakyThrows;
@@ -36,7 +38,7 @@ public class UserController extends AbstractController{
 
     @SneakyThrows
     @PostMapping("/users/register")
-    public UserWithoutPasswordDTO register(@Valid @RequestBody RegisterUserDTO userDTO, HttpSession session){
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterUserDTO userDTO, HttpSession session){
         User user = new User(userDTO);
         //check if already exists
         if(userDTO.getPassword().equals(userDTO.getConfirmPassword())){
@@ -50,7 +52,9 @@ public class UserController extends AbstractController{
         userRepository.save(user);
         session.setAttribute(SESSION_KEY_LOGGED_USER,user);
         UserWithoutPasswordDTO responseDTO =new UserWithoutPasswordDTO(user);
-        return responseDTO;
+        WelcomeToCommunity send = new WelcomeToCommunity(user,userRepository);
+        send.start();
+        return new ResponseEntity<>("You have been registered successfully!",HttpStatus.OK);
     }
 
     @SneakyThrows
@@ -111,6 +115,8 @@ public class UserController extends AbstractController{
         }
         currentUser.setPassword(userDTO.getPasswordAfterChange());
         userRepository.save(currentUser);
+        SuccessfullyChangedPassword send = new SuccessfullyChangedPassword(currentUser,userRepository);
+        send.start();
         return new ResponseEntity<>("Password changed successfully!", HttpStatus.OK);
     }
 
