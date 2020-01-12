@@ -1,7 +1,4 @@
 package finalproject.ninegag.controller;
-
-
-
 import finalproject.ninegag.exceptions.AuthorizationException;
 import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;

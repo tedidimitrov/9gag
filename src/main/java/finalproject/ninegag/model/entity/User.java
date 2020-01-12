@@ -47,7 +47,7 @@ public class User {
     @ManyToMany(mappedBy = "downvoters")
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<Post> downvotedPosts = new ArrayList<>();
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

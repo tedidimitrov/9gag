@@ -114,6 +114,16 @@ public class UserController extends AbstractController{
         return new ResponseEntity<>("Password changed successfully!", HttpStatus.OK);
     }
 
+    @DeleteMapping("/users/delete")
+    public ResponseEntity<String> deleteUser(HttpSession session){
+        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
+            throw new AuthorizationException("You must login first!");
+        }
+        User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        userRepository.delete(user);
+        return new ResponseEntity<>("Deletion succesful!",HttpStatus.OK);
+    }
+
     private boolean passwordValid(LoginUserDTO userDTO) {
         boolean identicalPasswords = BCrypt.checkpw(userDTO.getPassword(),userRepository.findByEmail(userDTO.getEmail()).getPassword());
         if(identicalPasswords){
