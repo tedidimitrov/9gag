@@ -15,10 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpSession;
+import java.io.*;
 import java.util.ArrayList;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,11 +35,8 @@ public class PostController extends AbstractController{
     @Autowired
     private PostRepository postRepository;
 
-    @Autowired
-    private PostDAO postDAO;
-
     @PostMapping("/posts")
-    public Post uploadPost(@RequestPart(name = "file") MultipartFile file,
+    public ReadyPostDTO uploadPost(@RequestPart(name = "file") MultipartFile file,
                            @RequestParam String title,
                            @RequestParam long id,
                            HttpSession session) throws IOException {
@@ -55,7 +51,7 @@ public class PostController extends AbstractController{
         String extension = file.getOriginalFilename();
         String pattern = "yyyy-MM-dd-hh-mm-ss";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        String postUrl = STORAGE_ABSOLUTE_PATH + title + LocalDateTime.now().format(formatter)+extension;
+        String postUrl = STORAGE_ABSOLUTE_PATH + LocalDateTime.now().format(formatter)+extension;
         Path path = Paths.get(postUrl);
         byte[] bytes = file.getBytes();
 
@@ -71,7 +67,8 @@ public class PostController extends AbstractController{
         post.setImageUrl(postUrl);
 
         postRepository.save(post);
-        return post;
+        ReadyPostDTO postDTO = new ReadyPostDTO(post);
+        return postDTO;
     }
 
     @PostMapping("/posts/create")

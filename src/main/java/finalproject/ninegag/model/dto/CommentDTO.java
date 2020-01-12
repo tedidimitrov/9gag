@@ -2,6 +2,7 @@ package finalproject.ninegag.model.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 @Setter
@@ -9,8 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CommentDTO {
 
+    @NonNull
     private String text;
-    private String imageUrl;
     private long parentId;
 
 }

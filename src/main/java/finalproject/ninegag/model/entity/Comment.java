@@ -40,7 +40,6 @@ public class Comment {
 
     public Comment(CommentDTO commentDTO){
         setText(commentDTO.getText());
-        setImageUrl(commentDTO.getImageUrl());
     }
 
 }

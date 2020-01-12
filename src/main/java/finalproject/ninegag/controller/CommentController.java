@@ -11,10 +11,17 @@ import finalproject.ninegag.model.repository.CommentRepository;
 import finalproject.ninegag.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.constraints.Null;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @RestController
@@ -27,10 +34,14 @@ public class CommentController extends AbstractController {
     @Autowired
     private CommentDao commentDao;
 
+    private static final String STORAGE_ABSOLUTE_PATH  = "D:\\Git\\uploads\\";
+
     @PostMapping("/posts/{post_id}/comments")
-    public Comment addComment(@RequestBody CommentDTO commentDto,
+    public Comment addComment(@RequestPart(name = "file",required=false) MultipartFile file,
+                              @RequestParam String text,
+                              @RequestParam(required=false) Long parentCommentId,
                               @PathVariable(name = "post_id") long postId,
-                              HttpSession session){
+                              HttpSession session) throws IOException {
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
@@ -38,13 +49,39 @@ public class CommentController extends AbstractController {
 
         Optional<Post> post = postRepository.findById(postId);
 
-        if(post.isPresent()){
-            Comment comment = new Comment(commentDto);
+        if(post.isPresent()) {
+            Comment comment = new Comment();
+            comment.setText(text);
             comment.setDatePosted(LocalDateTime.now());
-            comment.setPost(post.get());
             comment.setUser(user);
-            commentRepository.save(comment);
-            return comment;
+            comment.setPost(post.get());
+            //upload file
+            if (file != null) {
+                String extension = file.getOriginalFilename();
+                String pattern = "yyyy-MM-dd-hh-mm-ss";
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                String postUrl = STORAGE_ABSOLUTE_PATH + LocalDateTime.now().format(formatter) + extension;
+                Path path = Paths.get(postUrl);
+                byte[] bytes = file.getBytes();
+
+                Files.write(path, bytes);
+            }
+            if (parentCommentId != null) {
+                Optional<Comment> parent = commentRepository.findById(parentCommentId);
+                if (!parent.isPresent()) {
+                   throw new BadRequestException("There is no parent comment with this id!");
+                }
+                else {
+                    //else - reply to parent comment
+                    comment.setParentComment(parent.get());
+                    commentRepository.save(comment);
+                    return comment;
+                }
+            }
+            else{
+                commentRepository.save(comment);
+                return comment;
+            }
         }
         else{
             throw new NotFoundException("Post not found!");
@@ -87,32 +124,6 @@ public class CommentController extends AbstractController {
             throw new NotFoundException("Comment not found");
         }
     }
-
-    @PostMapping("/comments/{comment_id}")
-    public Comment reply(@RequestBody CommentDTO commentDTO,
-                         @PathVariable(name = "comment_id") long commentId,
-                         HttpSession session){
-
-        User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
-        if(user == null){
-            throw new AuthorizationException("You must login first!");
-        }
-
-        Optional<Comment> commentToBeReplied = commentRepository.findById(commentId);
-
-        if(commentToBeReplied.isPresent()){
-            Comment reply = new Comment(commentDTO);
-            reply.setDatePosted(LocalDateTime.now());
-            reply.setUser(user);
-            reply.setParentComment(commentToBeReplied.get());
-            commentRepository.save(reply);
-            return reply;
-        }
-        else{
-            throw new NotFoundException("Comment not found");
-        }
-    }
-
 
 
     @PostMapping("/comments/{comment_id}/upvote")

@@ -14,19 +14,19 @@ public class ReadyPostDTO {
 
     private long id;
     private String title;
-    private LocalDateTime date_uploaded;
-    private String image_url;
+    private LocalDateTime dateUploaded;
+    private String imageUrl;
     private int points;
-    private long post_owner_id;
-    private long category_id;
+    private long postOwnerId;
+    private long categoryId;
 
     public ReadyPostDTO(Post post){
         setId(post.getId());
         setTitle(post.getTitle());
-        setDate_uploaded(post.getDateUploaded());
-        setImage_url(post.getImageUrl());
+        setDateUploaded(post.getDateUploaded());
+        setImageUrl(post.getImageUrl());
         setPoints(post.getPoints());
-        setPost_owner_id(post.getUser().getId());
-        setCategory_id(post.getCategory().getId());
+        setPostOwnerId(post.getUser().getId());
+        setCategoryId(post.getCategory().getId());
     }
 }
