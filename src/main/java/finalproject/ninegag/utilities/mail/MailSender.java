@@ -1,9 +1,12 @@
-package finalproject.ninegag.model.mail;
+package finalproject.ninegag.utilities.mail;
+
+import finalproject.ninegag.exceptions.NotFoundException;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -12,8 +15,17 @@ public class MailSender {
 
     public static void sendMail(String to, String subject, String body) {
         final String username = SENDER;
-        Scanner scanner = new Scanner("9gagEmailPassword.txt");
-        final String password = scanner.nextLine();
+        final String password;
+        try(Scanner scanner = new Scanner(new FileInputStream("9gagEmailPassword.txt"))){
+            if(scanner.hasNextLine()){
+                password = scanner.nextLine();
+            }
+            else{
+                password = null;
+            }
+        }catch (FileNotFoundException e){
+            throw new NotFoundException("Missing file.");
+        }
         Properties prop = new Properties();
         prop.put("mail.smtp.ssl.trust", "smtp.gmail.com");
         prop.put("mail.smtp.host", "smtp.gmail.com");

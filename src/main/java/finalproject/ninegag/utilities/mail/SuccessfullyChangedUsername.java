@@ -1,17 +1,16 @@
-package finalproject.ninegag.model.mail;
+package finalproject.ninegag.utilities.mail;
 
 import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.UserRepository;
 
-public class SuccessfullyChangedPassword extends Thread {
+public class SuccessfullyChangedUsername  extends Thread{
+    private static final String SUBJECT = "Changed Username!";
 
-    private static final String SUBJECT = "Changed Password!";
-
-    private String text = "You have changed your password correctly!";
+    private String text = "You have changed your username correctly!";
     private User user;
     private UserRepository userRepository;
 
-    public SuccessfullyChangedPassword(User user,UserRepository userRepository){
+    public SuccessfullyChangedUsername(User user,UserRepository userRepository){
         this.user = user;
         this.userRepository = userRepository;
     }

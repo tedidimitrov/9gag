@@ -6,8 +6,9 @@ import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.*;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
-import finalproject.ninegag.model.mail.SuccessfullyChangedPassword;
-import finalproject.ninegag.model.mail.WelcomeToCommunity;
+import finalproject.ninegag.utilities.mail.SuccessfullyChangedPassword;
+import finalproject.ninegag.utilities.mail.SuccessfullyChangedUsername;
+import finalproject.ninegag.utilities.mail.WelcomeToCommunity;
 import finalproject.ninegag.model.repository.PostRepository;
 import finalproject.ninegag.model.repository.UserRepository;
 import lombok.SneakyThrows;
@@ -101,6 +102,8 @@ public class UserController extends AbstractController{
         User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         currentUser.setUser_name(usernameDTO.getUsernameAfterChange());
         userRepository.save(currentUser);
+        SuccessfullyChangedUsername send = new SuccessfullyChangedUsername(currentUser,userRepository);
+        send.start();
         return new ResponseEntity<>("Username changed successfully!", HttpStatus.OK);
     }
 

@@ -1,18 +1,17 @@
-package finalproject.ninegag.model.mail;
+package finalproject.ninegag.utilities.mail;
 
 import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.UserRepository;
 
-public class WelcomeToCommunity extends Thread {
+public class SuccessfullyChangedPassword extends Thread {
 
-    private static final String SUBJECT = "Welcome";
+    private static final String SUBJECT = "Changed Password!";
 
-    private String text = "Welcome to 9gagTalents Community!" +
-            "   Prepare for more amazing experiences!";
+    private String text = "You have changed your password correctly!";
     private User user;
     private UserRepository userRepository;
 
-    public WelcomeToCommunity(User user,UserRepository userRepository){
+    public SuccessfullyChangedPassword(User user,UserRepository userRepository){
         this.user = user;
         this.userRepository = userRepository;
     }
