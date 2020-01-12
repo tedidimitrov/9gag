@@ -1,6 +1,7 @@
 package finalproject.ninegag.controller;
 
 import finalproject.ninegag.exceptions.AuthorizationException;
+import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.MakePostDTO;
@@ -183,6 +184,23 @@ public class PostController extends AbstractController{
         }
         this.postRepository.save(post);
         return new ResponseEntity<>("upvoting done correctly!", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/posts/delete/{post_id}")
+    public ResponseEntity<String> deleteUser(@PathVariable long post_id,HttpSession session){
+        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
+            throw new AuthorizationException("You must login first!");
+        }
+        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        Optional<Post> currentPost = this.postRepository.findById(post_id);
+        if(!currentPost.isPresent()){
+            throw new BadRequestException("No such post found!");
+        }
+        else if(currentPost.get().getUser().getId() != currentUser.getId()){
+            throw  new AuthorizationException("You cannot delete this post.Ownership is mandatory for this operation!");
+        }
+        this.postRepository.delete(currentPost.get());
+        return new ResponseEntity<>("Deletion successful!",HttpStatus.OK);
     }
 
 }
