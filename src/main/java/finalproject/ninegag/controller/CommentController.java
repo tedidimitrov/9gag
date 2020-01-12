@@ -47,9 +47,7 @@ public class CommentController extends AbstractController {
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-
         Optional<Post> post = postRepository.findById(postId);
-
         ReadyCommentDTO commentDTO;
 
         if(post.isPresent()) {
@@ -68,50 +66,48 @@ public class CommentController extends AbstractController {
                 byte[] bytes = file.getBytes();
 
                 Files.write(path, bytes);
+                comment.setImageUrl(postUrl);
             }
             if (parentCommentId != null) {
                 Optional<Comment> parent = commentRepository.findById(parentCommentId);
                 if (!parent.isPresent()) {
                    throw new BadRequestException("There is no parent comment with this id!");
-                }
-                else {
+                } else {
                     //else - reply to parent comment
                     comment.setParentComment(parent.get());
                     commentRepository.save(comment);
                     commentDTO = new ReadyCommentDTO(comment);
                     return commentDTO;
                 }
-            }
-            else{
+            } else{
                 commentRepository.save(comment);
                 commentDTO = new ReadyCommentDTO(comment);
                 return commentDTO;
             }
-        }
-        else{
+        } else{
             throw new NotFoundException("Post not found!");
         }
     }
 
     @GetMapping("/comments/{comment_id}")
-    public Comment getCommentById(@PathVariable(name = "comment_id") long commentId){
+    public ReadyCommentDTO getCommentById(@PathVariable(name = "comment_id") long commentId){
 
         Optional<Comment> comment = commentRepository.findById(commentId);
 
         if(comment.isPresent()){
-            return comment.get();
-        }
-        else{
+            ReadyCommentDTO commentDTO = new ReadyCommentDTO(comment.get());
+            return commentDTO;
+        } else{
             throw new NotFoundException("Comment not found!");
         }
     }
 
     @DeleteMapping("/comments/{comment_id}")
-    public Comment deleteComment(@PathVariable(name = "comment_id") long commentId,
+    public ReadyCommentDTO deleteComment(@PathVariable(name = "comment_id") long commentId,
                                  HttpSession session){
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
-        if(user == null){
+        if(user == null) {
             throw new AuthorizationException("You must login first!");
         }
 
@@ -122,46 +118,43 @@ public class CommentController extends AbstractController {
                 throw new BadRequestException("You can only delete your own comments!");
             }
             commentRepository.delete(commentToBeDeleted.get());
-            return commentToBeDeleted.get();
-        }
-        else{
+            ReadyCommentDTO commentDTO = new ReadyCommentDTO(commentToBeDeleted.get());
+            return commentDTO;
+        } else{
             throw new NotFoundException("Comment not found");
         }
     }
 
-
     @PostMapping("/comments/{comment_id}/upvote")
-    public Comment upvote(@PathVariable(name = "comment_id") long commentId,
+    public ReadyCommentDTO upvote(@PathVariable(name = "comment_id") long commentId,
                           HttpSession session) throws SQLException {
 
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-
         Optional<Comment> comment = commentRepository.findById(commentId);
-
         if(comment.isPresent()){
             commentDao.upvoteComment(user, comment.get());
-            return comment.get();
+            ReadyCommentDTO commentDTO = new ReadyCommentDTO(comment.get());
+            return commentDTO;
         }
         throw new NotFoundException("Comment not found");
     }
 
     @PostMapping("/comments/{comment_id}/downvote")
-    public Comment downvote(@PathVariable(name = "comment_id") long commentId,
+    public ReadyCommentDTO downvote(@PathVariable(name = "comment_id") long commentId,
                           HttpSession session) throws SQLException{
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-
         Optional<Comment> comment = commentRepository.findById(commentId);
         if(comment.isPresent()){
             commentDao.downvoteComment(user, comment.get());
-            return comment.get();
-        }
-        else{
+            ReadyCommentDTO commentDTO = new ReadyCommentDTO(comment.get());
+            return commentDTO;
+        } else{
             throw new NotFoundException("Comment not found");
         }
     }
@@ -178,8 +171,7 @@ public class CommentController extends AbstractController {
             }else {
                 return points;
             }
-        }
-        else{
+        }else{
             throw new NotFoundException("Comment not found!");
         }
     }
