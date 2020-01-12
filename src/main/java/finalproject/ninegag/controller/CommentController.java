@@ -4,6 +4,7 @@ import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.CommentDao;
 import finalproject.ninegag.model.dto.CommentDTO;
+import finalproject.ninegag.model.dto.ReadyCommentDTO;
 import finalproject.ninegag.model.entity.Comment;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
@@ -37,17 +38,19 @@ public class CommentController extends AbstractController {
     private static final String STORAGE_ABSOLUTE_PATH  = "D:\\Git\\uploads\\";
 
     @PostMapping("/posts/{post_id}/comments")
-    public Comment addComment(@RequestPart(name = "file",required=false) MultipartFile file,
-                              @RequestParam String text,
-                              @RequestParam(required=false) Long parentCommentId,
-                              @PathVariable(name = "post_id") long postId,
-                              HttpSession session) throws IOException {
+    public ReadyCommentDTO addComment(@RequestPart(name = "file",required=false) MultipartFile file,
+                                      @RequestParam String text,
+                                      @RequestParam(required=false) Long parentCommentId,
+                                      @PathVariable(name = "post_id") long postId,
+                                      HttpSession session) throws IOException {
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
 
         Optional<Post> post = postRepository.findById(postId);
+
+        ReadyCommentDTO commentDTO;
 
         if(post.isPresent()) {
             Comment comment = new Comment();
@@ -75,18 +78,19 @@ public class CommentController extends AbstractController {
                     //else - reply to parent comment
                     comment.setParentComment(parent.get());
                     commentRepository.save(comment);
-                    return comment;
+                    commentDTO = new ReadyCommentDTO(comment);
+                    return commentDTO;
                 }
             }
             else{
                 commentRepository.save(comment);
-                return comment;
+                commentDTO = new ReadyCommentDTO(comment);
+                return commentDTO;
             }
         }
         else{
             throw new NotFoundException("Post not found!");
         }
-
     }
 
     @GetMapping("/comments/{comment_id}")
