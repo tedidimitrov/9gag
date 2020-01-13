@@ -38,7 +38,7 @@ public class PostController extends AbstractController{
     @PostMapping("/posts")
     public ReadyPostDTO uploadPost(@RequestPart(name = "file") MultipartFile file,
                            @RequestParam String title,
-                           @RequestParam long id,
+                           @RequestParam long categoryId,
                            HttpSession session) throws IOException {
         User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
         if(user == null){
@@ -60,7 +60,7 @@ public class PostController extends AbstractController{
         Post post = new Post();
         post.setPoints(0);
         //todo get category from db usingthe id
-        post.setCategory(new Category(id));
+        post.setCategory(new Category(categoryId));
         post.setDateUploaded(LocalDateTime.now());
         post.setTitle(title);
         post.setUser(user);
