@@ -124,8 +124,8 @@ public class PostController extends AbstractController{
         return readyPosts;
     }
 
-    @GetMapping("/posts/titles/{title}")
-    public List<ReadyPostDTO> getPostByTitle(@PathVariable String title){
+    @GetMapping("/posts/titles")
+    public List<ReadyPostDTO> getPostByTitle(@RequestParam(required = false) String title){
         List<Post> posts =this.postRepository.getByTitle(title);
         if(posts != null){
             List<ReadyPostDTO> readyPosts = new ArrayList<>();

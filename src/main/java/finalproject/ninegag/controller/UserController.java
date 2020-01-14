@@ -2,6 +2,7 @@ package finalproject.ninegag.controller;
 
 import finalproject.ninegag.exceptions.AuthorizationException;
 import finalproject.ninegag.exceptions.BadRequestException;
+import finalproject.ninegag.exceptions.CreatingEntityException;
 import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.*;
 import finalproject.ninegag.model.entity.Post;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -39,7 +41,11 @@ public class UserController extends AbstractController{
 
     @SneakyThrows
     @PostMapping("/users/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterUserDTO userDTO, HttpSession session){
+    public ResponseEntity<UserWithoutPasswordDTO> register(@Valid @RequestBody RegisterUserDTO userDTO,
+                                                           HttpSession session, Errors errors){
+        if (errors.hasErrors()) {
+            throw new CreatingEntityException(errors.getFieldError().getDefaultMessage());
+        }
         User user = new User(userDTO);
         //check if already exists
         if(userDTO.getPassword().equals(userDTO.getConfirmPassword())){
@@ -55,7 +61,7 @@ public class UserController extends AbstractController{
         UserWithoutPasswordDTO responseDTO =new UserWithoutPasswordDTO(user);
         WelcomeToCommunity send = new WelcomeToCommunity(user,userRepository);
         send.start();
-        return new ResponseEntity<>("You have been registered successfully!",HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
     @SneakyThrows
@@ -81,7 +87,7 @@ public class UserController extends AbstractController{
     }
 
     @GetMapping("users/posts")
-    public List<ReadyPostDTO> getPosts(HttpSession session) throws SQLException {
+    public List<ReadyPostDTO> getPosts(HttpSession session){
         User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         if(user == null){
             throw new AuthorizationException("You must login first!");

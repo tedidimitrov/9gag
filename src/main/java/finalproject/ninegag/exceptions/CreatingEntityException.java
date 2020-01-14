@@ -1,8 +1,8 @@
 package finalproject.ninegag.exceptions;
 
-public class CreatingEnityException extends RuntimeException {
+public class CreatingEntityException extends RuntimeException {
 
-    public CreatingEnityException(String msg) {
+    public CreatingEntityException(String msg) {
         super(msg);
     }
 }
