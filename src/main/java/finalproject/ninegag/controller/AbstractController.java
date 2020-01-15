@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
@@ -27,7 +29,8 @@ import java.time.LocalDateTime;
 @EnableWebMvc
 public abstract class AbstractController extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({NotFoundException.class})
+
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorDTO handleNotFound(Exception e) {
         ErrorDTO errorDTO = new ErrorDTO(
@@ -82,6 +85,23 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     protected ErrorDTO handleException(Exception e) {
         return new ErrorDTO(e.getClass().getSimpleName(),HttpStatus.SERVICE_UNAVAILABLE.value(),LocalDateTime.now(),"Oops! Something happened.Please try again later.");
+    }
+
+    @ExceptionHandler(CreatingEntityException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public void handleCreatingEntityException( HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.NOT_FOUND.value());
+    }
+
+    @ExceptionHandler(IOException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDTO handleIOException(IOException e){
+        ErrorDTO errorDTO = new ErrorDTO(
+                e.getClass().getName(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now(),
+                e.getMessage());
+        return errorDTO;
     }
 
 }

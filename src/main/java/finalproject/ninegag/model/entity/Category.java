@@ -19,9 +19,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column
     private String categoryName;
 
-    public Category(long category_id) {
-        this.id = category_id;
-    }
 }

@@ -2,6 +2,7 @@ package finalproject.ninegag.model.entity;
 
 
 import finalproject.ninegag.model.dto.CommentDTO;
+import finalproject.ninegag.model.dto.ReadyCommentDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

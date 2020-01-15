@@ -46,6 +46,8 @@ public class CommentDao{
 
     public void upvoteComment(User user, Comment comment) throws SQLException {
         try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+            //if the comment is already upvoted
+            //then remove the upvote
             if (isCommentUpvoted(user, comment)) {
                 try (PreparedStatement statement = connection.prepareStatement(DELETE_UPVOTED_COMMENT_BY_USER_ID);) {
                     statement.setLong(1, user.getId());
@@ -55,6 +57,8 @@ public class CommentDao{
             } else {
                 try {
                     connection.setAutoCommit(false);
+                    //if the comment is already downvoted
+                    //then remove the downvote
                     if (isCommentDownvoted(user, comment)) {
                         try(PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
                             statement.setLong(1, user.getId());
@@ -62,17 +66,20 @@ public class CommentDao{
                             statement.executeUpdate();
                         }
                     }
+                    //upvote the comment
                     try(PreparedStatement statement = connection.prepareStatement(INSERT_INTO_UPVOTED);) {
                         statement.setLong(1, user.getId());
                         statement.setLong(2, comment.getId());
                         statement.executeUpdate();
 
                         connection.commit();
-                        connection.setAutoCommit(true);
                     }
                 }catch (SQLException e){
                     connection.rollback();
                     throw new SQLException("This comments wasn't upvoted!" , e);
+                }
+                finally {
+                    connection.setAutoCommit(true);
                 }
             }
         }
@@ -80,6 +87,8 @@ public class CommentDao{
 
     public void downvoteComment(User user, Comment comment) throws SQLException {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+            //if the comment is already downvoted
+            //then remove the downvote
             if (isCommentDownvoted(user, comment)) {
                 try(PreparedStatement statement = connection.prepareStatement(DELETE_DOWNVOTED_COMMENT_BY_USER_ID);) {
                     statement.setLong(1, user.getId());
@@ -89,6 +98,8 @@ public class CommentDao{
             } else {
                 try {
                     connection.setAutoCommit(false);
+                    //if the comment is already upvoted
+                    //remove the upvote
                     if (isCommentUpvoted(user, comment)) {
                         try(PreparedStatement statement = connection.prepareStatement(DELETE_UPVOTED_COMMENT_BY_USER_ID);) {
                             statement.setLong(1, user.getId());
@@ -96,17 +107,20 @@ public class CommentDao{
                             statement.executeUpdate();
                         }
                     }
+                    //downvote the comment
                     try(PreparedStatement statement = connection.prepareStatement(INSERT_INTO_DOWNVOTED);) {
                         statement.setLong(1, user.getId());
                         statement.setLong(2, comment.getId());
                         statement.executeUpdate();
 
                         connection.commit();
-                        connection.setAutoCommit(true);
                     }
                 }catch (SQLException e){
                     connection.rollback();
                     throw new SQLException("This comments wasn't downvoted!" , e);
+                }
+                finally {
+                    connection.setAutoCommit(true);
                 }
             }
         }
@@ -118,9 +132,9 @@ public class CommentDao{
             statement.setLong(1, comment.getId());
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
-            long x = resultSet.getInt("upvoted");
-            long y = resultSet.getInt("downvoted");
-            return x - y;
+            long numberUpvotes = resultSet.getInt("upvoted");
+            long numberDownvotes = resultSet.getInt("downvoted");
+            return numberUpvotes - numberDownvotes;
         }
     }
 

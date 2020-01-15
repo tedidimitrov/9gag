@@ -5,23 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
-public class UserWithoutPasswordDTO {
+
+public class ReadyUserDTO {
 
     private long id;
     private String username;
-    private String firstName;
-    private String lastName;
-    private String email;
 
-    public UserWithoutPasswordDTO(User user){
+    public ReadyUserDTO(User user){
         setId(user.getId());
         setUsername(user.getUserName());
-        setFirstName(user.getFirstName());
-        setLastName(user.getLastName());
-        setEmail(user.getEmail());
     }
 
 }

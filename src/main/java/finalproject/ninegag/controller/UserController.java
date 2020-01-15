@@ -110,10 +110,10 @@ public class UserController extends AbstractController{
             throw new BadRequestException("Wrong (current/new) username");
         }
         User currentUser = SessionManager.getLoggedUser(session);
-        if(!currentUser.getUser_name().equals(usernameDTO.getUsernameBeforeChange())) {
+        if(!currentUser.getUserName().equals(usernameDTO.getUsernameBeforeChange())) {
             throw new BadRequestException("Current username mismatch");
         }
-        currentUser.setUser_name(usernameDTO.getUsernameAfterChange());
+        currentUser.setUserName(usernameDTO.getUsernameAfterChange());
         userRepository.save(currentUser);
         SuccessfullyChangedUsername send = new SuccessfullyChangedUsername(currentUser,userRepository);
         send.start();

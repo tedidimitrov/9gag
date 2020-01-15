@@ -1,8 +1,9 @@
 package finalproject.ninegag.model.dto;
 
+import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
+
 import lombok.Setter;
 
 @Setter
@@ -10,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CommentDTO {
 
-    @NonNull
+    @NotNull
     private String text;
     private long parentId;
 

@@ -1,6 +1,7 @@
 package finalproject.ninegag.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import finalproject.ninegag.model.dto.ReadyUserDTO;
 import finalproject.ninegag.model.dto.RegisterUserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column
-    private String user_name;
+    private String userName;
     @Column
     private String firstName;
     @Column
@@ -62,7 +63,7 @@ public class User {
     }
 
     public User(RegisterUserDTO userDTO){
-        setUser_name(userDTO.getUsername());
+        setUserName(userDTO.getUsername());
         setFirstName(userDTO.getFirstName());
         setLastName(userDTO.getLastName());
         setEmail(userDTO.getEmail());
@@ -74,5 +75,11 @@ public class User {
         this.password = new BCryptPasswordEncoder().encode(password);
     }
 
+    public ReadyUserDTO toUserDTO(){
+        ReadyUserDTO userDTO = new ReadyUserDTO();
+        userDTO.setId(this.getId());
+        userDTO.setUsername(this.getUserName());
+        return userDTO;
+    }
 
 }
