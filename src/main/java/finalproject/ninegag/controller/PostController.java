@@ -9,6 +9,7 @@ import finalproject.ninegag.model.dto.ReadyPostDTO;
 import finalproject.ninegag.model.entity.Category;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
+import finalproject.ninegag.model.repository.CategoryRepository;
 import finalproject.ninegag.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,8 @@ public class PostController extends AbstractController{
 
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @PostMapping("/posts")
     public ReadyPostDTO uploadPost(@RequestPart(name = "file") MultipartFile file,
@@ -44,31 +47,33 @@ public class PostController extends AbstractController{
         if(user == null){
             throw new AuthorizationException("You must login first!");
         }
-        if(file == null){
+        if(file.isEmpty()){
             throw new NotFoundException("The file in not found!");
         }
 
         String extension = file.getOriginalFilename();
         String pattern = "yyyy-MM-dd-hh-mm-ss";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        String postUrl = STORAGE_ABSOLUTE_PATH + LocalDateTime.now().format(formatter)+extension;
-        Path path = Paths.get(postUrl);
+        String postUrl = LocalDateTime.now().format(formatter)+extension;
+        Path path = Paths.get(STORAGE_ABSOLUTE_PATH + postUrl);
         byte[] bytes = file.getBytes();
-
         Files.write(path, bytes);
 
         Post post = new Post();
         post.setPoints(0);
-        //todo get category from db usingthe id
-        post.setCategory(new Category(categoryId));
-        post.setDateUploaded(LocalDateTime.now());
-        post.setTitle(title);
-        post.setUser(user);
-        post.setImageUrl(postUrl);
-
-        postRepository.save(post);
-        ReadyPostDTO postDTO = new ReadyPostDTO(post);
-        return postDTO;
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        if(category.isPresent()) {
+            post.setCategory(category.get());
+            post.setDateUploaded(LocalDateTime.now());
+            post.setTitle(title);
+            post.setUser(user);
+            post.setImageUrl(postUrl);
+            postRepository.save(post);
+            return new ReadyPostDTO(post);
+        }
+        else{
+            throw new NotFoundException("No such category found");
+        }
     }
 
     @PostMapping("/posts/create")
@@ -169,7 +174,7 @@ public class PostController extends AbstractController{
         User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         Optional<Post> optionalPost = this.postRepository.findById(post_id);
         if(!optionalPost.isPresent()){
-            throw  new NotFoundException("No such post found!");
+            throw new NotFoundException("No such post found!");
         }
         Post post = optionalPost.get();
         if(post.getUpvoters().contains(currentUser)){
@@ -184,20 +189,26 @@ public class PostController extends AbstractController{
     }
 
     @DeleteMapping("/posts/delete/{post_id}")
-    public ResponseEntity<String> deleteUser(@PathVariable long post_id,HttpSession session){
+    public ResponseEntity<String> deletePost(@PathVariable long post_id,HttpSession session) throws IOException {
         if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
             throw new AuthorizationException("You must login first!");
         }
         User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         Optional<Post> currentPost = this.postRepository.findById(post_id);
         if(!currentPost.isPresent()){
-            throw new BadRequestException("No such post found!");
+            throw new NotFoundException("No such post found!");
         }
         else if(currentPost.get().getUser().getId() != currentUser.getId()){
-            throw  new AuthorizationException("You cannot delete this post.Ownership is mandatory for this operation!");
+            throw new AuthorizationException("You cannot delete this post.Ownership is mandatory for this operation!");
         }
-        this.postRepository.delete(currentPost.get());
-        return new ResponseEntity<>("Deletion successful!",HttpStatus.OK);
+        File file = new File(STORAGE_ABSOLUTE_PATH + currentPost.get().getImageUrl());
+        if(file.delete()){
+            this.postRepository.delete(currentPost.get());
+            return new ResponseEntity<>("Deletion successful!",HttpStatus.OK);
+        }
+        else {
+            throw new IOException("The file was not deleted properly!");
+        }
     }
 
 }

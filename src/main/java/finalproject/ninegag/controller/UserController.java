@@ -106,7 +106,7 @@ public class UserController extends AbstractController{
             throw new AuthorizationException("You must login first!");
         }
         User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
-        currentUser.setUser_name(usernameDTO.getUsernameAfterChange());
+        currentUser.setUserName(usernameDTO.getUsernameAfterChange());
         userRepository.save(currentUser);
         SuccessfullyChangedUsername send = new SuccessfullyChangedUsername(currentUser,userRepository);
         send.start();

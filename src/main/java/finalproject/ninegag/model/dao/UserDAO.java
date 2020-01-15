@@ -36,7 +36,7 @@ public class UserDAO {
     public void addUser(User user) throws SQLException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
         try(PreparedStatement statement = connection.prepareStatement(REGISTER_USER_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, user.getUser_name());
+            statement.setString(1, user.getUserName());
             statement.setString(2, user.getFirstName());
             statement.setString(3, user.getLastName());
             statement.setString(4, user.getEmail());
