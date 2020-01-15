@@ -10,6 +10,7 @@ import finalproject.ninegag.model.entity.Category;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.PostRepository;
+import finalproject.ninegag.utilities.SessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,10 +41,7 @@ public class PostController extends AbstractController{
                            @RequestParam String title,
                            @RequestParam long categoryId,
                            HttpSession session) throws IOException {
-        User user = (User) session.getAttribute(UserController.SESSION_KEY_LOGGED_USER);
-        if(user == null){
-            throw new AuthorizationException("You must login first!");
-        }
+        User user = SessionManager.getLoggedUser(session);
         if(file == null){
             throw new NotFoundException("The file in not found!");
         }
@@ -73,10 +71,8 @@ public class PostController extends AbstractController{
 
     @PostMapping("/posts/create")
     public ReadyPostDTO addPost(@RequestBody MakePostDTO postDTO, HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER) == null){
-            throw new AuthorizationException("You must be logged in first!");
-        }
-        User currentUser = (User)session.getAttribute(SESSION_KEY_LOGGED_USER);
+
+        User currentUser = SessionManager.getLoggedUser(session);
         Post post = new Post(postDTO,currentUser);
         //add to database
         postRepository.save(post);
@@ -139,10 +135,7 @@ public class PostController extends AbstractController{
 
     @PostMapping("/posts/downvote/{post_id}")
     public ResponseEntity<String> downvotePost(@PathVariable long post_id,HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER) == null){
-            throw new AuthorizationException("You must be logged in first!");
-        }
-        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        User currentUser = SessionManager.getLoggedUser(session);
         Optional<Post> optionalPost = this.postRepository.findById(post_id);
         if(!optionalPost.isPresent()){
             throw  new NotFoundException("No such post found!");
@@ -163,10 +156,7 @@ public class PostController extends AbstractController{
 
     @PostMapping("/posts/upvote/{post_id}")
     public ResponseEntity<String> upvotePost(@PathVariable long post_id,HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER) == null){
-            throw new AuthorizationException("You must be logged in first!");
-        }
-        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        User currentUser = SessionManager.getLoggedUser(session);
         Optional<Post> optionalPost = this.postRepository.findById(post_id);
         if(!optionalPost.isPresent()){
             throw  new NotFoundException("No such post found!");
@@ -184,11 +174,8 @@ public class PostController extends AbstractController{
     }
 
     @DeleteMapping("/posts/delete/{post_id}")
-    public ResponseEntity<String> deleteUser(@PathVariable long post_id,HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
-            throw new AuthorizationException("You must login first!");
-        }
-        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+    public ResponseEntity<String> deletePost(@PathVariable long post_id,HttpSession session){
+        User currentUser = SessionManager.getLoggedUser(session);
         Optional<Post> currentPost = this.postRepository.findById(post_id);
         if(!currentPost.isPresent()){
             throw new BadRequestException("No such post found!");

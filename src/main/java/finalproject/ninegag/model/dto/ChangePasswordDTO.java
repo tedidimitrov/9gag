@@ -15,6 +15,7 @@ public class ChangePasswordDTO {
     private static final String INCORRECT_PASSWORD_MESSAGE = "password must contain at least 8 symbols that includes:" +
             "one digit, one uppercase letter and one lowercase letter";
 
+    @NotBlank
     private String passwordBeforeChange;
     @NotBlank
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",message =INCORRECT_PASSWORD_MESSAGE)

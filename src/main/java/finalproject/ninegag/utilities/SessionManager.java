@@ -19,11 +19,11 @@ public class SessionManager {
     }
     public static User getLoggedUser(HttpSession session) throws AuthorizationException {
         if (isValidSession(session)) {
-            return (User) session.getAttribute("user");
+            return (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
         }
         throw new AuthorizationException("You must login first!");
     }
     public static void logUser(HttpSession session, User user) {
-        session.setAttribute(SESSION_KEY_LOGGED_USER, true);
+        session.setAttribute(SESSION_KEY_LOGGED_USER,user);
     }
 }

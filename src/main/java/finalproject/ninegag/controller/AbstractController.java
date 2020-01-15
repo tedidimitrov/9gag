@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -25,18 +26,6 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 @EnableWebMvc
 public abstract class AbstractController extends ResponseEntityExceptionHandler {
-
-
-    @ExceptionHandler({NullPointerException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorDTO handleNullPointerException(NullPointerException e) {
-        ErrorDTO errorDTO = new ErrorDTO(
-                e.getClass().getSimpleName(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now(),
-                e.getMessage());
-        return errorDTO;
-    }
 
     @ExceptionHandler({NotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -71,6 +60,13 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
         return errorDTO;
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    protected ResponseEntity<Object> handleConstraintViolationException(RuntimeException e) {
+        ErrorDTO error = new ErrorDTO(e.getClass().getSimpleName(),HttpStatus.BAD_REQUEST.value(),LocalDateTime.now(),"Incorrect inputs!");
+        return new ResponseEntity<>(error, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler({AuthorizationException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorDTO handleUnauthorized(Exception e) {
@@ -82,9 +78,10 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
         return errorDTO;
     }
 
-    @ExceptionHandler({CreatingEntityException.class})
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public void handleCreatingEntityException( HttpServletResponse response) throws IOException {
-        response.sendError(HttpStatus.NOT_FOUND.value());
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    protected ErrorDTO handleException(Exception e) {
+        return new ErrorDTO(e.getClass().getSimpleName(),HttpStatus.SERVICE_UNAVAILABLE.value(),LocalDateTime.now(),"Oops! Something happened.Please try again later.");
     }
+
 }

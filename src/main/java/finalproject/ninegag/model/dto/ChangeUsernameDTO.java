@@ -15,6 +15,7 @@ public class ChangeUsernameDTO {
     private static final String INCORRECT_USERNAME = "username should be at between 8 and 20 symbols.Allowed symbols:" +
                                                       "letters,digits, '.' and '_'";
 
+    @NotBlank(message = "Confirmation of current username is mandatory!")
     private String usernameBeforeChange;
     @NotBlank
     @Pattern(regexp = "^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$",message = INCORRECT_USERNAME)

@@ -7,6 +7,7 @@ import finalproject.ninegag.model.dao.PostDAO;
 import finalproject.ninegag.model.dto.*;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
+import finalproject.ninegag.utilities.SessionManager;
 import finalproject.ninegag.utilities.mail.SuccessfullyChangedPassword;
 import finalproject.ninegag.utilities.mail.SuccessfullyChangedUsername;
 import finalproject.ninegag.utilities.mail.WelcomeToCommunity;
@@ -66,14 +67,18 @@ public class UserController extends AbstractController{
 
     @SneakyThrows
     @PostMapping("/users/login")
-    public UserWithoutPasswordDTO login(@RequestBody LoginUserDTO userDTO, HttpSession session) {
+    public UserWithoutPasswordDTO login(@Valid @RequestBody LoginUserDTO userDTO, HttpSession session, Errors errors) {
+
+        if(errors.hasErrors()){
+            throw  new CreatingEntityException(errors.getFieldError().getDefaultMessage());
+        }
 
         User user = userRepository.findByEmail(userDTO.getEmail());
         if(user == null){
             throw new BadRequestException("Invalid Credentials");
         }
         else if(passwordValid(userDTO)){
-            session.setAttribute(SESSION_KEY_LOGGED_USER,user);
+            SessionManager.logUser(session,user);
             UserWithoutPasswordDTO responseDTO =new UserWithoutPasswordDTO(user);
             return responseDTO;
         }
@@ -88,10 +93,7 @@ public class UserController extends AbstractController{
 
     @GetMapping("users/posts")
     public List<ReadyPostDTO> getPosts(HttpSession session){
-        User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
-        if(user == null){
-            throw new AuthorizationException("You must login first!");
-        }
+        User user = SessionManager.getLoggedUser(session);
         List<Post> posts = postRepository.findAllByUser_Id(user.getId());
         List<ReadyPostDTO> readyPosts = new ArrayList<>();
         for(Post post: posts){
@@ -101,11 +103,16 @@ public class UserController extends AbstractController{
     }
 
     @PutMapping("/users/changeUsername")
-    public ResponseEntity<String> changeUsername(@RequestBody ChangeUsernameDTO usernameDTO, HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
-            throw new AuthorizationException("You must login first!");
+    public ResponseEntity<String> changeUsername(@Valid @RequestBody ChangeUsernameDTO usernameDTO, HttpSession session,
+                                                 Errors errors){
+
+        if(errors.hasErrors()){
+            throw new BadRequestException("Wrong (current/new) username");
         }
-        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        User currentUser = SessionManager.getLoggedUser(session);
+        if(!currentUser.getUser_name().equals(usernameDTO.getUsernameBeforeChange())) {
+            throw new BadRequestException("Current username mismatch");
+        }
         currentUser.setUser_name(usernameDTO.getUsernameAfterChange());
         userRepository.save(currentUser);
         SuccessfullyChangedUsername send = new SuccessfullyChangedUsername(currentUser,userRepository);
@@ -114,11 +121,8 @@ public class UserController extends AbstractController{
     }
 
     @PutMapping("/users/changePassword")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDTO userDTO, HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
-            throw new AuthorizationException("You must login first!");
-        }
-        User currentUser = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDTO userDTO, HttpSession session){
+        User currentUser = SessionManager.getLoggedUser(session);
         if(!BCrypt.checkpw(userDTO.getPasswordBeforeChange(),currentUser.getPassword())){
             throw new BadRequestException("Mismatching old password!");
         }
@@ -131,10 +135,7 @@ public class UserController extends AbstractController{
 
     @DeleteMapping("/users/delete")
     public ResponseEntity<String> deleteUser(HttpSession session){
-        if(session.isNew() || session.getAttribute(SESSION_KEY_LOGGED_USER)== null){
-            throw new AuthorizationException("You must login first!");
-        }
-        User user = (User) session.getAttribute(SESSION_KEY_LOGGED_USER);
+        User user = SessionManager.getLoggedUser(session);
         userRepository.delete(user);
         return new ResponseEntity<>("Deletion succesful!",HttpStatus.OK);
     }
