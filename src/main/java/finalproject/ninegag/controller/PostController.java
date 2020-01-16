@@ -144,10 +144,10 @@ public class PostController extends AbstractController{
         throw new NotFoundException("Not found such post!");
     }
 
-    @PostMapping("/posts/downvote/{post_id}")
-    public ResponseEntity<String> downvotePost(@PathVariable long post_id,HttpSession session){
+    @PostMapping("/posts/downvote/{postId}")
+    public ResponseEntity<String> downvotePost(@PathVariable long postId,HttpSession session){
         User currentUser = SessionManager.getLoggedUser(session);
-        Optional<Post> optionalPost = this.postRepository.findById(post_id);
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
         if(!optionalPost.isPresent()){
             throw  new NotFoundException("No such post found!");
         }
@@ -165,10 +165,10 @@ public class PostController extends AbstractController{
         return new ResponseEntity<>("downvoting done correctly!", HttpStatus.OK);
     }
 
-    @PostMapping("/posts/upvote/{post_id}")
-    public ResponseEntity<String> upvotePost(@PathVariable long post_id,HttpSession session){
+    @PostMapping("/posts/upvote/{postId}")
+    public ResponseEntity<String> upvotePost(@PathVariable long postId,HttpSession session){
         User currentUser = SessionManager.getLoggedUser(session);
-        Optional<Post> optionalPost = this.postRepository.findById(post_id);
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
         if(!optionalPost.isPresent()){
             throw new NotFoundException("No such post found!");
         }
@@ -185,10 +185,10 @@ public class PostController extends AbstractController{
     }
 
     @SneakyThrows
-    @DeleteMapping("/posts/delete/{post_id}")
-    public ResponseEntity<String> deletePost(@PathVariable long post_id,HttpSession session){
+    @DeleteMapping("/posts/delete/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable long postId,HttpSession session){
         User currentUser = SessionManager.getLoggedUser(session);
-        Optional<Post> currentPost = this.postRepository.findById(post_id);
+        Optional<Post> currentPost = this.postRepository.findById(postId);
         if(!currentPost.isPresent()){
             throw new NotFoundException("No such post found!");
         }
