@@ -23,4 +23,5 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     public List<Post> findAllByCategory_CategoryName(String category);
 
+    public Post findByTitle(String title);
 }

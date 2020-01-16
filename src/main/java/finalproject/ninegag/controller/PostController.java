@@ -4,6 +4,7 @@ import finalproject.ninegag.exceptions.AuthorizationException;
 import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.PostDAO;
+import finalproject.ninegag.model.dto.ChangePostTitleDTO;
 import finalproject.ninegag.model.dto.MakePostDTO;
 import finalproject.ninegag.model.dto.ReadyPostDTO;
 import finalproject.ninegag.model.entity.Category;
@@ -16,10 +17,13 @@ import javafx.geometry.Pos;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.io.*;
 import java.util.ArrayList;
 import java.nio.file.Files;
@@ -218,6 +222,23 @@ public class PostController extends AbstractController{
             return readyPosts;
         }else{
             throw new NotFoundException("No such category found!");
+        }
+    }
+
+    @PutMapping("/posts/editTitle")
+    public ResponseEntity<String> editPost(HttpSession session, @Valid @RequestBody ChangePostTitleDTO post, Errors errors){
+        User currentUser = SessionManager.getLoggedUser(session);
+        if(errors.hasErrors()){
+            throw  new BadRequestException("Fields must not be empty!");
+        }
+        Post currentPost = this.postRepository.findByTitle(post.getCurrentTitle());
+        if(currentPost == null){
+            throw  new BadRequestException("No post with such title found!");
+        }
+        else{
+            currentPost.setTitle(post.getNewTitle());
+            this.postRepository.save(currentPost);
+            return new ResponseEntity<>("editing post successfully!",HttpStatus.OK);
         }
     }
 
