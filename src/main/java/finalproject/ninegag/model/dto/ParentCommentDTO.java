@@ -8,12 +8,13 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReadyCommentDTO {
-
+public class ParentCommentDTO {
     @NotNull
     private long id;
     @NotNull
@@ -26,9 +27,9 @@ public class ReadyCommentDTO {
     private long postId;
     @NotNull
     private ReadyUserDTO commentOwner;
-    private ChildCommentDTO parentComment;
+    private List<ChildCommentDTO> children;
 
-    public ReadyCommentDTO(Comment comment){
+    public ParentCommentDTO(Comment comment){
         setId(comment.getId());
         setText(comment.getText());
         setDatePosted(comment.getDatePosted());
@@ -38,12 +39,9 @@ public class ReadyCommentDTO {
         setImageUrl(comment.getImageUrl());
         setPostId(comment.getPost().getId());
         setCommentOwner(comment.getUser().toUserDTO());
-        if(comment.getParentComment() != null) {
-            setParentComment(comment.getParentComment().toChildCommentDTO());//todo
-        }
     }
 
-    public ReadyCommentDTO(Comment comment, ReadyUserDTO userDTO) {
+    public ParentCommentDTO(Comment comment, List<ChildCommentDTO> replies){
         setId(comment.getId());
         setText(comment.getText());
         setDatePosted(comment.getDatePosted());
@@ -52,11 +50,7 @@ public class ReadyCommentDTO {
         }
         setImageUrl(comment.getImageUrl());
         setPostId(comment.getPost().getId());
-        setCommentOwner(userDTO);
-        if(comment.getParentComment() != null) {
-            //ChildComment DTO is a Comment DTO without parentComment
-            setParentComment(comment.getParentComment().toChildCommentDTO());
-        }
+        setCommentOwner(comment.getUser().toUserDTO());
+        this.children = new ArrayList<>(replies);
     }
-
 }

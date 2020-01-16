@@ -13,13 +13,13 @@ import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.CategoryRepository;
 import finalproject.ninegag.model.repository.PostRepository;
 import finalproject.ninegag.utilities.SessionManager;
-import javafx.geometry.Pos;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
@@ -31,14 +31,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
+@Validated
 public class PostController extends AbstractController{
 
-    public static final String SESSION_KEY_LOGGED_USER = "logged_user";
     private static final String STORAGE_ABSOLUTE_PATH  = "D:\\Git\\uploads\\";
+    private static final List<String> AVAILABLE_FILE_TYPES = Arrays.asList("image/jpeg", "image/png", "video/mp4");
 
     @Autowired
     private PostRepository postRepository;
@@ -46,13 +48,20 @@ public class PostController extends AbstractController{
     private CategoryRepository categoryRepository;
 
     @PostMapping("/posts")
-    public ReadyPostDTO uploadPost(@RequestPart(name = "file") MultipartFile file,
-                           @RequestParam String title,
-                           @RequestParam long categoryId,
+    public ReadyPostDTO uploadPost(@Valid @RequestPart(name = "file") MultipartFile file,
+                           @Valid @RequestParam (name = "title", defaultValue = "")String title,
+                           @Valid @RequestParam long categoryId,
                            HttpSession session) throws IOException {
         User user = SessionManager.getLoggedUser(session);
         if(file.isEmpty()){
-            throw new NotFoundException("The file in not found!");
+            throw new NotFoundException("The file is not found!");
+        }
+        if(!AVAILABLE_FILE_TYPES.contains(file.getContentType())){
+            throw new BadRequestException("Invalid file type");
+        }
+        title = title.trim();
+        if(title.equals("")){
+            throw new BadRequestException("You must enter post title");
         }
 
         String extension = file.getOriginalFilename();

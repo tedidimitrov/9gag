@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -103,5 +104,26 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
                 e.getMessage());
         return errorDTO;
     }
+//
+//    @ExceptionHandler(NumberFormatException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public ErrorDTO handleHttpMessageNotReadable(NumberFormatException e){
+//        ErrorDTO errorDTO = new ErrorDTO(
+//                e.getClass().getName(),
+//                HttpStatus.BAD_REQUEST.value(),
+//                LocalDateTime.now(),
+//                "You must enter the right data format!");
+//        return errorDTO;
+//    }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleHttpMessageNotReadable(MethodArgumentTypeMismatchException e) {
+        ErrorDTO errorDTO = new ErrorDTO(
+                e.getClass().getName(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                "You must enter the right data format!");
+        return errorDTO;
+    }
 }

@@ -1,7 +1,7 @@
 package finalproject.ninegag.model.entity;
 
 
-import finalproject.ninegag.model.dto.CommentDTO;
+import finalproject.ninegag.model.dto.ChildCommentDTO;
 import finalproject.ninegag.model.dto.ReadyCommentDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,8 +39,25 @@ public class Comment {
     @JoinColumn(name = "replied_to_id")
     private Comment parentComment;
 
-    public Comment(CommentDTO commentDTO){
-        setText(commentDTO.getText());
+    public ReadyCommentDTO toCommentDTO(){
+        ReadyCommentDTO commentDTO = new ReadyCommentDTO();
+        commentDTO.setId(this.getId());
+        commentDTO.setDatePosted(this.getDatePosted());
+        commentDTO.setText(this.getText());
+        commentDTO.setImageUrl(this.getImageUrl());
+        commentDTO.setCommentOwner(this.user.toUserDTO());
+        return commentDTO;
     }
+
+    public ChildCommentDTO toChildCommentDTO(){
+        ChildCommentDTO commentDTO = new ChildCommentDTO();
+        commentDTO.setId(this.getId());
+        commentDTO.setDatePosted(this.getDatePosted());
+        commentDTO.setText(this.getText());
+        commentDTO.setImageUrl(this.getImageUrl());
+        commentDTO.setCommentOwner(this.user.toUserDTO());
+        return commentDTO;
+    }
+
 
 }

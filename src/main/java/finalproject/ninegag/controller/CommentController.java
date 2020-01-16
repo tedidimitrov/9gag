@@ -1,11 +1,8 @@
 package finalproject.ninegag.controller;
-import finalproject.ninegag.exceptions.AuthorizationException;
 import finalproject.ninegag.exceptions.BadRequestException;
 import finalproject.ninegag.exceptions.NotFoundException;
 import finalproject.ninegag.model.dao.CommentDao;
-import finalproject.ninegag.model.dto.CommentDTO;
-import finalproject.ninegag.model.dto.ReadyCommentDTO;
-import finalproject.ninegag.model.dto.ReadyUserDTO;
+import finalproject.ninegag.model.dto.*;
 import finalproject.ninegag.model.entity.Comment;
 import finalproject.ninegag.model.entity.Post;
 import finalproject.ninegag.model.entity.User;
@@ -21,11 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
-import javax.validation.executable.ValidateOnExecution;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,9 +26,13 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
+@Validated
 public class CommentController extends AbstractController {
 
     @Autowired
@@ -47,14 +43,18 @@ public class CommentController extends AbstractController {
     private CommentDao commentDao;
 
     private static final String STORAGE_ABSOLUTE_PATH = "D:\\Git\\uploads\\";
+    private static final List<String> AVAILABLE_FILE_TYPES = Arrays.asList("image/jpeg", "image/png", "video/mp4");
 
     @PostMapping("/posts/{post_id}/comments")
-    public ReadyCommentDTO addComment(@RequestPart(name = "file", required = false) MultipartFile file,
-                                      @RequestParam(name = "text", defaultValue = "") String text,
-                                      @RequestParam(required = false) Long parentCommentId,
-                                      @PathVariable(name = "post_id") long postId,
+    public ReadyCommentDTO addComment(@Valid @RequestPart(name = "file", required = false) MultipartFile file,
+                                      @Valid @RequestParam(name = "text", defaultValue = "") String text,
+                                      @Valid @RequestParam(required = false) Long parentCommentId,
+                                      @Valid @PathVariable(name = "post_id") long postId,
                                       HttpSession session) throws IOException {
         User user = SessionManager.getLoggedUser(session);
+        if(!AVAILABLE_FILE_TYPES.contains(file.getContentType())){
+            throw new BadRequestException("Invalid file type");
+        }
         text = text.trim();
         if (text.equals("")) {
             throw new BadRequestException("You must enter text!");
@@ -179,4 +179,36 @@ public class CommentController extends AbstractController {
             throw new NotFoundException("Comment not found!");
         }
     }
+
+    @GetMapping("/posts/{post_id}/comments")
+    public List<ParentCommentDTO> getAllCommentByPostId(@PathVariable(name = "post_id")long postId) {
+        Optional<Post> post = postRepository.findById(postId);
+        //check if such post exists
+        if (!post.isPresent()) {
+            throw new NotFoundException("Post not found!");
+        }
+        List<Comment> repliesToPost = commentRepository.findAllByPostIdAndParentCommentIsNullOrderByDatePostedDesc(postId);
+            //if there are no comments to the post
+            if (repliesToPost.isEmpty()) {
+                return null;
+            }
+            List<ParentCommentDTO> parentComments = new ArrayList<>();
+
+            for (Comment c : repliesToPost) {
+                List<Comment> repliesToComments = commentRepository.findAllByParentCommentIdOrderByDatePostedDesc(c.getId());
+                //if there are any repliesToComments
+                if (!repliesToComments.isEmpty()) {
+                    List<ChildCommentDTO> childrenComments = new ArrayList<>();
+                    for (Comment r : repliesToComments) {
+                        childrenComments.add(r.toChildCommentDTO());
+                    }
+                    parentComments.add(new ParentCommentDTO(c, childrenComments));
+                } else {
+                    parentComments.add(new ParentCommentDTO(c));
+                }
+            }
+            return parentComments;
+        }
+
+
 }

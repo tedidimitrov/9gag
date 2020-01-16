@@ -12,8 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReadyCommentDTO {
-
+public class ChildCommentDTO {
     @NotNull
     private long id;
     @NotNull
@@ -26,9 +25,8 @@ public class ReadyCommentDTO {
     private long postId;
     @NotNull
     private ReadyUserDTO commentOwner;
-    private ChildCommentDTO parentComment;
 
-    public ReadyCommentDTO(Comment comment){
+    public ChildCommentDTO(Comment comment){
         setId(comment.getId());
         setText(comment.getText());
         setDatePosted(comment.getDatePosted());
@@ -38,25 +36,7 @@ public class ReadyCommentDTO {
         setImageUrl(comment.getImageUrl());
         setPostId(comment.getPost().getId());
         setCommentOwner(comment.getUser().toUserDTO());
-        if(comment.getParentComment() != null) {
-            setParentComment(comment.getParentComment().toChildCommentDTO());//todo
-        }
     }
 
-    public ReadyCommentDTO(Comment comment, ReadyUserDTO userDTO) {
-        setId(comment.getId());
-        setText(comment.getText());
-        setDatePosted(comment.getDatePosted());
-        if(comment.getImageUrl() != null){
-            setImageUrl(comment.getImageUrl());
-        }
-        setImageUrl(comment.getImageUrl());
-        setPostId(comment.getPost().getId());
-        setCommentOwner(userDTO);
-        if(comment.getParentComment() != null) {
-            //ChildComment DTO is a Comment DTO without parentComment
-            setParentComment(comment.getParentComment().toChildCommentDTO());
-        }
-    }
 
 }
