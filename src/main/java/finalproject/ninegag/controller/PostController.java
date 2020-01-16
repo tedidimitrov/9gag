@@ -12,6 +12,7 @@ import finalproject.ninegag.model.entity.User;
 import finalproject.ninegag.model.repository.CategoryRepository;
 import finalproject.ninegag.model.repository.PostRepository;
 import finalproject.ninegag.utilities.SessionManager;
+import javafx.geometry.Pos;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -197,6 +198,26 @@ public class PostController extends AbstractController{
         }
         else {
             throw new IOException("The file was not deleted properly!");
+        }
+    }
+
+    @SneakyThrows
+    @GetMapping("/posts/category")
+    public List<ReadyPostDTO> getPostsByCategory(@RequestParam(required = false) String category){
+        List<Post> posts = new ArrayList<>();
+        if(category.isEmpty()){
+            posts = this.postRepository.findAll();
+        }else{
+            posts = this.postRepository.findAllByCategory_CategoryName(category);
+        }
+        if(!posts.isEmpty()) {
+            List<ReadyPostDTO> readyPosts = new ArrayList<>();
+            for (Post post : posts) {
+                readyPosts.add(new ReadyPostDTO(post));
+            }
+            return readyPosts;
+        }else{
+            throw new NotFoundException("No such category found!");
         }
     }
 

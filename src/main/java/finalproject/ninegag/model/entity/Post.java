@@ -39,7 +39,6 @@ public class Post {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name ="category_id")
     private Category category;
-    //problems below
     @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     @JoinTable(name = "users_upvoted_posts",joinColumns = @JoinColumn(name ="posts_id"),inverseJoinColumns =@JoinColumn(name="user_id"))
     private List<User> upvoters = new ArrayList<>();

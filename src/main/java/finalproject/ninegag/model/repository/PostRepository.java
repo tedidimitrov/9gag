@@ -1,5 +1,6 @@
 package finalproject.ninegag.model.repository;
 
+import finalproject.ninegag.model.entity.Category;
 import finalproject.ninegag.model.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,5 +20,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     @Query("Select c from Post c where c.title like %:title%")
     public List<Post> getByTitle(String title);
+
+    public List<Post> findAllByCategory_CategoryName(String category);
 
 }
