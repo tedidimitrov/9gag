@@ -221,7 +221,7 @@ public class PostController extends AbstractController{
             }
             return readyPosts;
         }else{
-            throw new NotFoundException("No such category found!");
+            throw new NotFoundException("No post of such category found!");
         }
     }
 
