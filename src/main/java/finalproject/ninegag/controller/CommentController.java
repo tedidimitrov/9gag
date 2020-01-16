@@ -70,17 +70,15 @@ public class CommentController extends AbstractController {
             comment.setUser(user);
             comment.setPost(post.get());
             //upload file
-            if (file != null) {
-                String extension = file.getOriginalFilename();
-                String pattern = "yyyy-MM-dd-hh-mm-ss";
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-                String postUrl = LocalDateTime.now().format(formatter) + extension;
-                Path path = Paths.get(STORAGE_ABSOLUTE_PATH + postUrl);
-                byte[] bytes = file.getBytes();
+            String extension = file.getOriginalFilename();
+            String pattern = "yyyy-MM-dd-hh-mm-ss";
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            String postUrl = LocalDateTime.now().format(formatter) + extension;
+            Path path = Paths.get(STORAGE_ABSOLUTE_PATH + postUrl);
+            byte[] bytes = file.getBytes();
 
-                Files.write(path, bytes);
-                comment.setImageUrl(postUrl);
-            }
+            Files.write(path, bytes);
+            comment.setImageUrl(postUrl);
             if (parentCommentId != null) {
                 Optional<Comment> parent = commentRepository.findById(parentCommentId);
                 if (!parent.isPresent()) {
@@ -190,7 +188,7 @@ public class CommentController extends AbstractController {
         List<Comment> repliesToPost = commentRepository.findAllByPostIdAndParentCommentIsNullOrderByDatePostedDesc(postId);
             //if there are no comments to the post
             if (repliesToPost.isEmpty()) {
-                return null;
+                return new ArrayList<>();
             }
             List<ParentCommentDTO> parentComments = new ArrayList<>();
 
