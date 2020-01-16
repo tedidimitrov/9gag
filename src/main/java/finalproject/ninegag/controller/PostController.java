@@ -101,15 +101,7 @@ public class PostController extends AbstractController{
         return readyPostDTO;
     }
 
-    public ReadyPostDTO getPost(long id){
-        Optional<Post> optionalPost = postRepository.findById(id);
-        if(optionalPost.isPresent()){
-            Post post = optionalPost.get();
-            return new ReadyPostDTO(post);
-        }
-        throw new NotFoundException("Post not found!");
 
-    }
 
     @GetMapping("/posts/{id}")
     public ReadyPostDTO getPostById(@PathVariable long id){

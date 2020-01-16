@@ -104,17 +104,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
                 e.getMessage());
         return errorDTO;
     }
-//
-//    @ExceptionHandler(NumberFormatException.class)
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ErrorDTO handleHttpMessageNotReadable(NumberFormatException e){
-//        ErrorDTO errorDTO = new ErrorDTO(
-//                e.getClass().getName(),
-//                HttpStatus.BAD_REQUEST.value(),
-//                LocalDateTime.now(),
-//                "You must enter the right data format!");
-//        return errorDTO;
-//    }
+
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
