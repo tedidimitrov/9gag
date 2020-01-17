@@ -52,8 +52,10 @@ public class CommentController extends AbstractController {
                                       @Valid @PathVariable(name = "post_id") long postId,
                                       HttpSession session) throws IOException {
         User user = SessionManager.getLoggedUser(session);
-        if(!AVAILABLE_FILE_TYPES.contains(file.getContentType())){
-            throw new BadRequestException("Invalid file type");
+        if(file != null) {
+            if (!AVAILABLE_FILE_TYPES.contains(file.getContentType())) {
+                throw new BadRequestException("Invalid file type");
+            }
         }
         text = text.trim();
         if (text.equals("")) {
@@ -70,15 +72,17 @@ public class CommentController extends AbstractController {
             comment.setUser(user);
             comment.setPost(post.get());
             //upload file
-            String extension = file.getOriginalFilename();
-            String pattern = "yyyy-MM-dd-hh-mm-ss";
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-            String postUrl = LocalDateTime.now().format(formatter) + extension;
-            Path path = Paths.get(STORAGE_ABSOLUTE_PATH + postUrl);
-            byte[] bytes = file.getBytes();
+            if(file != null) {
+                String extension = file.getOriginalFilename();
+                String pattern = "yyyy-MM-dd-hh-mm-ss";
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                String postUrl = LocalDateTime.now().format(formatter) + extension;
+                Path path = Paths.get(STORAGE_ABSOLUTE_PATH + postUrl);
+                byte[] bytes = file.getBytes();
 
-            Files.write(path, bytes);
-            comment.setImageUrl(postUrl);
+                Files.write(path, bytes);
+                comment.setImageUrl(postUrl);
+            }
             if (parentCommentId != null) {
                 Optional<Comment> parent = commentRepository.findById(parentCommentId);
                 if (!parent.isPresent()) {
